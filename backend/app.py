@@ -47,12 +47,20 @@ def check_ip_whitelist():
     if not ENABLE_IP_WHITELIST:
         return True
 
-    # Get client IP (handle proxy headers)
-    client_ip = request.headers.get('X-Forwarded-For', request.remote_addr)
-    if client_ip:
-        # X-Forwarded-For can contain multiple IPs, get the first one
-        client_ip = client_ip.split(',')[0].strip()
+    # First check X-Forwarded-For (contains original client IP from proxy chain)
+    forwarded_for = request.headers.get('X-Forwarded-For', '')
+    if forwarded_for:
+        # X-Forwarded-For can be a comma-separated list: "client, proxy1, proxy2"
+        # The first IP is the original client
+        ips = [ip.strip() for ip in forwarded_for.split(',')]
+        original_ip = ips[0] if ips else None
 
+        if original_ip and original_ip in TRMNL_IPS:
+            return True
+
+    # Fallback to direct connection (no proxy) or X-Real-IP
+    # Check X-Real-IP first, then remote_addr
+    client_ip = request.headers.get('X-Real-IP') or request.remote_addr
     return client_ip in TRMNL_IPS
 
 

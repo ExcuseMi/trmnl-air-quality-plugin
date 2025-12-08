@@ -1,1 +1,1 @@
-# trmnl-air-pollution-plugin
+# trmnl-air-quality-plugin
