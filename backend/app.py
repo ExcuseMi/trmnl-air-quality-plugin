@@ -91,6 +91,35 @@ def get_aqi_status(aqi):
         return "Hazardous"
 
 
+def get_pollutant_name(pol_code):
+    """Convert pollutant code to readable name"""
+    pollutants = {
+        'pm25': 'PM2.5',
+        'pm10': 'PM10',
+        'o3': 'Ozone',
+        'no2': 'NO₂',
+        'so2': 'SO₂',
+        'co': 'CO'
+    }
+    return pollutants.get(pol_code, pol_code.upper() if pol_code else 'Unknown')
+
+
+def get_health_advice(aqi):
+    """Get health advice based on AQI level"""
+    if aqi <= 50:
+        return "Air quality is good. Enjoy outdoor activities!"
+    elif aqi <= 100:
+        return "Air quality is acceptable for most people."
+    elif aqi <= 150:
+        return "Sensitive groups should reduce prolonged outdoor exertion."
+    elif aqi <= 200:
+        return "Everyone should reduce prolonged outdoor exertion."
+    elif aqi <= 300:
+        return "Avoid prolonged outdoor exertion. Keep windows closed."
+    else:
+        return "Stay indoors and keep windows closed. Health alert!"
+
+
 async def init_db():
     """Initialize SQLite database"""
     async with aiosqlite.connect(DB_PATH) as db:
@@ -206,13 +235,26 @@ async def get_cached_aqi(lat, lon):
         row = await cursor.fetchone()
         if row:
             print(f"Cache hit for {lat},{lon}")
+            city = row[4]
+            country = None
+            if ', ' in city:
+                parts = city.split(', ')
+                city = parts[0]
+                country = parts[-1] if len(parts) > 1 else None
+
+            dominentpol = row[3]
+            aqi = row[2]
+
             return {
                 'lat': row[0],
                 'lon': row[1],
-                'aqi': row[2],
-                'dominentpol': row[3],
-                'city': row[4],
+                'aqi': aqi,
+                'dominentpol': dominentpol,
+                'pollutant_name': get_pollutant_name(dominentpol),
+                'city': city,
+                'country': country,
                 'status': row[5],
+                'health_advice': get_health_advice(aqi),
                 'pm25': row[6],
                 'pm10': row[7],
                 'fetched_at': row[9]
@@ -224,6 +266,11 @@ async def get_cached_aqi(lat, lon):
 async def cache_aqi(lat, lon, aqi_data):
     """Cache AQI data"""
     async with aiosqlite.connect(DB_PATH) as db:
+        # Reconstruct full city name for storage
+        city_full = aqi_data.get('city')
+        if aqi_data.get('country'):
+            city_full = f"{aqi_data.get('city')}, {aqi_data.get('country')}"
+
         await db.execute(
             '''INSERT OR REPLACE INTO aqi_cache 
                (lat, lon, aqi, dominentpol, city_name, status, pm25, pm10, data_json, fetched_at)
@@ -232,7 +279,7 @@ async def cache_aqi(lat, lon, aqi_data):
                 lat, lon,
                 aqi_data.get('aqi'),
                 aqi_data.get('dominentpol'),
-                aqi_data.get('city'),
+                city_full,
                 aqi_data.get('status'),
                 aqi_data.get('pm25'),
                 aqi_data.get('pm10'),
@@ -276,18 +323,35 @@ async def fetch_aqi_data(lat, lon, zoom=9):
             aqi_info = data['data']
             aqi = aqi_info.get('aqi', 0)
 
+            # Parse city name (often includes country)
+            city_raw = aqi_info.get('city', {}).get('name', 'Unknown')
+            # Split city and country if format is "City, Country"
+            if ', ' in city_raw:
+                city_parts = city_raw.split(', ')
+                city = city_parts[0]
+                country = city_parts[-1] if len(city_parts) > 1 else None
+            else:
+                city = city_raw
+                country = None
+
             # Parse iaqi (individual pollutants)
             iaqi = aqi_info.get('iaqi', {})
             pm25 = iaqi.get('pm25', {}).get('v')
             pm10 = iaqi.get('pm10', {}).get('v')
+
+            # Get dominant pollutant
+            dominentpol = aqi_info.get('dominentpol', 'N/A')
 
             result = {
                 'lat': lat,
                 'lon': lon,
                 'aqi': aqi,
                 'status': get_aqi_status(aqi),
-                'city': aqi_info.get('city', {}).get('name', 'Unknown'),
-                'dominentpol': aqi_info.get('dominentpol', 'N/A'),
+                'city': city,
+                'country': country,
+                'dominentpol': dominentpol,
+                'pollutant_name': get_pollutant_name(dominentpol),
+                'health_advice': get_health_advice(aqi),
                 'pm25': pm25,
                 'pm10': pm10,
                 'tile_x': None,
