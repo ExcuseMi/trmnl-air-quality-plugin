@@ -11,6 +11,7 @@ app = Flask(__name__)
 
 # Configuration
 AQICN_API_KEY = os.getenv('AQICN_API_KEY')
+OPENWEATHER_API_KEY = os.getenv('OPENWEATHER_API_KEY')
 CACHE_HOURS = 1
 DB_PATH = '/data/aqi_cache.db'
 ENABLE_IP_WHITELIST = os.getenv('ENABLE_IP_WHITELIST', 'false').lower() == 'true'
@@ -43,26 +44,16 @@ async def fetch_trmnl_ips():
 
 
 def check_ip_whitelist():
-    """Check if request is from TRMNL servers through Cloudflare"""
+    """Check if request is from TRMNL servers"""
     if not ENABLE_IP_WHITELIST:
         return True
 
-    # 1. First check Cloudflare-specific headers
-    cloudflare_ip = request.headers.get('CF-Connecting-IP') or request.headers.get('True-Client-IP')
-    if cloudflare_ip and cloudflare_ip in TRMNL_IPS:
-        return True
+    # Get client IP (handle proxy headers)
+    client_ip = request.headers.get('X-Forwarded-For', request.remote_addr)
+    if client_ip:
+        # X-Forwarded-For can contain multiple IPs, get the first one
+        client_ip = client_ip.split(',')[0].strip()
 
-    # 2. Check X-Forwarded-For (Cloudflare should add the original IP as first in chain)
-    forwarded_for = request.headers.get('X-Forwarded-For', '')
-    if forwarded_for:
-        # Get the first IP in the chain (original client)
-        ips = [ip.strip() for ip in forwarded_for.split(',')]
-        original_ip = ips[0] if ips else None
-        if original_ip and original_ip in TRMNL_IPS:
-            return True
-
-    # 3. For direct connections (no Cloudflare), use X-Real-IP or remote_addr
-    client_ip = request.headers.get('X-Real-IP') or request.remote_addr
     return client_ip in TRMNL_IPS
 
 
@@ -158,6 +149,83 @@ async def init_db():
             )
         ''')
         await db.commit()
+
+
+async def fetch_openweather_forecast(lat, lon):
+    """
+    Fetch air pollution forecast from OpenWeatherMap API.
+    Returns forecast for next 24 hours.
+    """
+    if not OPENWEATHER_API_KEY:
+        print("OpenWeatherMap API key not configured")
+        return None
+
+    url = f"http://api.openweathermap.org/data/2.5/air_pollution/forecast"
+    params = {
+        'lat': lat,
+        'lon': lon,
+        'appid': OPENWEATHER_API_KEY
+    }
+
+    try:
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            response = await client.get(url, params=params)
+
+            if response.status_code == 200:
+                data = response.json()
+
+                if 'list' in data and len(data['list']) > 0:
+                    # Get forecast for ~24 hours from now (index 8, each is 3 hours)
+                    # OpenWeather gives hourly forecasts
+                    forecasts = data['list']
+
+                    # Find forecast closest to 24 hours from now
+                    now = datetime.now().timestamp()
+                    target_time = now + (24 * 3600)  # 24 hours from now
+
+                    closest_forecast = min(forecasts,
+                                           key=lambda x: abs(x['dt'] - target_time))
+
+                    aqi = closest_forecast['main']['aqi']
+                    components = closest_forecast['components']
+
+                    # OpenWeather AQI scale: 1=Good, 2=Fair, 3=Moderate, 4=Poor, 5=Very Poor
+                    # Convert to US AQI approximation
+                    aqi_map = {
+                        1: 25,  # Good
+                        2: 75,  # Fair
+                        3: 125,  # Moderate
+                        4: 175,  # Poor
+                        5: 250  # Very Poor
+                    }
+
+                    us_aqi = aqi_map.get(aqi, 50)
+
+                    # Determine dominant pollutant
+                    pm25 = components.get('pm2_5', 0)
+                    pm10 = components.get('pm10', 0)
+                    o3 = components.get('o3', 0)
+                    no2 = components.get('no2', 0)
+
+                    # Simple dominance check (by concentration)
+                    dominant = 'pm25' if pm25 > pm10 and pm25 > o3 / 2 else 'o3'
+
+                    return {
+                        'aqi': us_aqi,
+                        'pm25': pm25,
+                        'pm10': pm10,
+                        'o3': o3,
+                        'no2': no2,
+                        'dominant': dominant,
+                        'timestamp': closest_forecast['dt']
+                    }
+
+            print(f"OpenWeather API error: {response.status_code}")
+            return None
+
+    except Exception as e:
+        print(f"Error fetching OpenWeather forecast: {e}")
+        return None
 
 
 async def geocode_address(address):
@@ -498,6 +566,11 @@ async def get_aqi():
 
     if not aqi_data:
         return jsonify({'error': 'Failed to fetch AQI data'}), 500
+
+    # Fetch forecast data
+    forecast = await fetch_openweather_forecast(lat, lon)
+    if forecast:
+        aqi_data['forecast'] = forecast
 
     return jsonify(aqi_data)
 
