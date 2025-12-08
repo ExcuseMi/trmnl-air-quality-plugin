@@ -13,7 +13,6 @@ app = Flask(__name__)
 AQICN_API_KEY = os.getenv('AQICN_API_KEY')
 CACHE_HOURS = 1
 DB_PATH = '/data/aqi_cache.db'
-TILES_PATH = '/data/tiles'
 ENABLE_IP_WHITELIST = os.getenv('ENABLE_IP_WHITELIST', 'false').lower() == 'true'
 
 # TRMNL server IPs (fetched from https://usetrmnl.com/api/ips on startup)
@@ -21,7 +20,6 @@ TRMNL_IPS = set()
 
 # Ensure directories exist
 os.makedirs(os.path.dirname(DB_PATH), exist_ok=True)
-os.makedirs(TILES_PATH, exist_ok=True)
 
 
 async def fetch_trmnl_ips():
@@ -136,15 +134,6 @@ async def init_db():
                 data_json TEXT,
                 fetched_at TIMESTAMP,
                 PRIMARY KEY (lat, lon)
-            )
-        ''')
-
-        # Tile cache table
-        await db.execute('''
-            CREATE TABLE IF NOT EXISTS tile_cache (
-                url TEXT PRIMARY KEY,
-                filepath TEXT,
-                fetched_at TIMESTAMP
             )
         ''')
 
