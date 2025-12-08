@@ -345,63 +345,34 @@ async def get_aqi():
     return jsonify(aqi_data)
 
 
-@app.route('/tiles/aqi/<int:z>/<int:x>/<int:y>.png')
-async def proxy_aqi_tile(z, x, y):
-    """Proxy AQICN tiles with caching"""
-    # Check cache
-    tile_path = os.path.join(TILES_PATH, f"{z}_{x}_{y}.png")
-
-    # Check if cached and fresh (1 hour)
-    if os.path.exists(tile_path):
-        file_age = time.time() - os.path.getmtime(tile_path)
-        if file_age < CACHE_HOURS * 3600:
-            return send_file(tile_path, mimetype='image/png')
-
-    # Fetch from AQICN
-    url = f"https://tiles.aqicn.org/tiles/usepa-aqi/{z}/{x}/{y}.png?token={AQICN_API_KEY}"
-
-    try:
-        async with httpx.AsyncClient(timeout=10.0) as client:
-            response = await client.get(url)
-
-            if response.status_code == 200:
-                # Save to cache
-                os.makedirs(os.path.dirname(tile_path), exist_ok=True)
-                with open(tile_path, 'wb') as f:
-                    f.write(response.content)
-
-                return send_file(tile_path, mimetype='image/png')
-            else:
-                return jsonify({'error': 'Failed to fetch tile'}), response.status_code
-    except Exception as e:
-        print(f"Error fetching tile: {e}")
-        return jsonify({'error': str(e)}), 500
-
-
 def create_app():
     """Application factory"""
-
-    @app.before_serving
-    async def startup():
-        """Initialize on startup"""
-        global TRMNL_IPS
-
-        print("Starting TRMNL AQI Plugin...")
-        print(f"AQICN API Key: {'*' * 10}{AQICN_API_KEY[-4:] if AQICN_API_KEY else 'NOT SET'}")
-        print(f"Cache duration: {CACHE_HOURS} hours")
-        print(f"IP Whitelist enabled: {ENABLE_IP_WHITELIST}")
-
-        # Initialize database
-        await init_db()
-        print("Database initialized")
-
-        # Fetch TRMNL IPs if whitelist is enabled
-        if ENABLE_IP_WHITELIST:
-            TRMNL_IPS = await fetch_trmnl_ips()
-
     return app
 
 
+# Initialize on module load (runs once per worker)
+async def startup():
+    """Initialize on startup"""
+    global TRMNL_IPS
+
+    print("Starting TRMNL AQI Plugin...")
+    print(f"AQICN API Key: {'*' * 10}{AQICN_API_KEY[-4:] if AQICN_API_KEY else 'NOT SET'}")
+    print(f"Cache duration: {CACHE_HOURS} hours")
+    print(f"IP Whitelist enabled: {ENABLE_IP_WHITELIST}")
+
+    # Initialize database
+    await init_db()
+    print("Database initialized")
+
+    # Fetch TRMNL IPs if whitelist is enabled
+    if ENABLE_IP_WHITELIST:
+        TRMNL_IPS = await fetch_trmnl_ips()
+
+
+# Run startup in event loop
+import asyncio
+
+asyncio.run(startup())
+
 if __name__ == '__main__':
-    app = create_app()
     app.run(host='0.0.0.0', port=8080)
