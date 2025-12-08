@@ -1,0 +1,21 @@
+version: '3.8'
+
+services:
+  aqi-api:
+    build: ./backend
+    container_name: trmnl-aqi-api
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    env_file:
+      - .env
+    volumes:
+      - aqi-data:/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+volumes:
+  aqi-data:

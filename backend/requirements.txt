@@ -1,0 +1,6 @@
+flask[async]
+httpx
+pillow
+python-dotenv
+gunicorn
+aiosqlite
