@@ -3,9 +3,18 @@ import asyncio
 import aiosqlite
 import httpx
 import time
+import json
+import logging
 from datetime import datetime, timedelta
 from flask import Flask, request, jsonify, send_file
 import math
+
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
 
@@ -35,11 +44,11 @@ async def fetch_trmnl_ips():
             ips = set(data.get('data', {}).get('ipv4', []))
             ips.update(data.get('data', {}).get('ipv6', []))
 
-            print(f"Fetched {len(ips)} TRMNL IPs from API")
+            logger.info(f"Fetched {len(ips)} TRMNL IPs from API")
             return ips
     except Exception as e:
-        print(f"Warning: Failed to fetch TRMNL IPs: {e}")
-        print("IP whitelist will not work until IPs are loaded")
+        logger.info(f"Warning: Failed to fetch TRMNL IPs: {e}")
+        logger.info("IP whitelist will not work until IPs are loaded")
         return set()
 
 
@@ -148,6 +157,17 @@ async def init_db():
                 cached_at TIMESTAMP
             )
         ''')
+
+        # Forecast cache table (24 hour TTL)
+        await db.execute('''
+            CREATE TABLE IF NOT EXISTS forecast_cache (
+                lat REAL,
+                lon REAL,
+                forecast_json TEXT,
+                cached_at TIMESTAMP,
+                PRIMARY KEY (lat, lon)
+            )
+        ''')
         await db.commit()
 
 
@@ -155,11 +175,36 @@ async def fetch_openweather_forecast(lat, lon):
     """
     Fetch air pollution forecast from OpenWeatherMap API.
     Returns forecast for next 24 hours.
+    Cached for 24 hours per location.
     """
     if not OPENWEATHER_API_KEY:
-        print("OpenWeatherMap API key not configured")
+        logger.info("OpenWeatherMap API key not configured")
         return None
 
+    # Round coordinates to 2 decimal places for cache key
+    lat_rounded = round(lat, 2)
+    lon_rounded = round(lon, 2)
+
+    # Check cache first (24 hour TTL)
+    async with aiosqlite.connect(DB_PATH) as db:
+        cursor = await db.execute(
+            'SELECT forecast_json, cached_at FROM forecast_cache WHERE lat = ? AND lon = ?',
+            (lat_rounded, lon_rounded)
+        )
+        row = await cursor.fetchone()
+
+        if row:
+            forecast_json, cached_at = row
+            cached_time = datetime.fromisoformat(cached_at)
+            age = (datetime.now() - cached_time).total_seconds() / 3600
+
+            if age < 24:  # 24 hour cache
+                logger.info(f"Forecast cache hit for ({lat_rounded}, {lon_rounded}), age: {age:.1f}h")
+                return json.loads(forecast_json)
+            else:
+                logger.info(f"Forecast cache expired for ({lat_rounded}, {lon_rounded}), age: {age:.1f}h")
+
+    # Fetch from API
     url = f"http://api.openweathermap.org/data/2.5/air_pollution/forecast"
     params = {
         'lat': lat,
@@ -175,8 +220,7 @@ async def fetch_openweather_forecast(lat, lon):
                 data = response.json()
 
                 if 'list' in data and len(data['list']) > 0:
-                    # Get forecast for ~24 hours from now (index 8, each is 3 hours)
-                    # OpenWeather gives hourly forecasts
+                    # Get forecast for ~24 hours from now
                     forecasts = data['list']
 
                     # Find forecast closest to 24 hours from now
@@ -210,7 +254,7 @@ async def fetch_openweather_forecast(lat, lon):
                     # Simple dominance check (by concentration)
                     dominant = 'pm25' if pm25 > pm10 and pm25 > o3 / 2 else 'o3'
 
-                    return {
+                    forecast_data = {
                         'aqi': us_aqi,
                         'pm25': pm25,
                         'pm10': pm10,
@@ -220,11 +264,24 @@ async def fetch_openweather_forecast(lat, lon):
                         'timestamp': closest_forecast['dt']
                     }
 
-            print(f"OpenWeather API error: {response.status_code}")
+                    # Cache the result
+                    async with aiosqlite.connect(DB_PATH) as db:
+                        await db.execute(
+                            '''INSERT OR REPLACE INTO forecast_cache 
+                               (lat, lon, forecast_json, cached_at)
+                               VALUES (?, ?, ?, ?)''',
+                            (lat_rounded, lon_rounded, json.dumps(forecast_data), datetime.now().isoformat())
+                        )
+                        await db.commit()
+
+                    logger.info(f"Fetched and cached forecast for ({lat_rounded}, {lon_rounded})")
+                    return forecast_data
+
+            logger.info(f"OpenWeather API error: {response.status_code}")
             return None
 
     except Exception as e:
-        print(f"Error fetching OpenWeather forecast: {e}")
+        logger.info(f"Error fetching OpenWeather forecast: {e}")
         return None
 
 
@@ -241,7 +298,7 @@ async def geocode_address(address):
         )
         row = await cursor.fetchone()
         if row:
-            print(f"Geocoding cache hit for: {address}")
+            logger.info(f"Geocoding cache hit for: {address}")
             return {
                 'lat': row[0],
                 'lon': row[1],
@@ -282,20 +339,20 @@ async def geocode_address(address):
                         )
                         await db.commit()
 
-                    print(f"Geocoded '{address}' to ({lat}, {lon})")
+                    logger.info(f"Geocoded '{address}' to ({lat}, {lon})")
                     return {
                         'lat': lat,
                         'lon': lon,
                         'display_name': display_name
                     }
                 else:
-                    print(f"No results found for address: {address}")
+                    logger.info(f"No results found for address: {address}")
                     return None
             else:
-                print(f"Geocoding API error: {response.status_code}")
+                logger.info(f"Geocoding API error: {response.status_code}")
                 return None
     except Exception as e:
-        print(f"Error geocoding address: {e}")
+        logger.info(f"Error geocoding address: {e}")
         return None
 
 
@@ -361,16 +418,16 @@ async def fetch_nearby_stations(lat, lon, zoom=9):
                             'aqi': aqi_num  # Now a proper integer
                         })
 
-                    print(f"Fetched {len(filtered_stations)} valid stations (filtered from {len(raw_stations)})")
+                    logger.info(f"Fetched {len(filtered_stations)} valid stations (filtered from {len(raw_stations)})")
                     return filtered_stations
                 else:
-                    print(f"API error: {data}")
+                    logger.info(f"API error: {data}")
                     return []
             else:
-                print(f"Failed to fetch stations: {response.status_code}")
+                logger.info(f"Failed to fetch stations: {response.status_code}")
                 return []
     except Exception as e:
-        print(f"Error fetching nearby stations: {e}")
+        logger.info(f"Error fetching nearby stations: {e}")
         return []
 
 
@@ -383,7 +440,7 @@ async def get_cached_aqi(lat, lon):
         )
         row = await cursor.fetchone()
         if row:
-            print(f"Cache hit for {lat},{lon}")
+            logger.info(f"Cache hit for {lat},{lon}")
             city = row[4]
             country = None
             if ', ' in city:
@@ -408,7 +465,7 @@ async def get_cached_aqi(lat, lon):
                 'pm10': row[7],
                 'fetched_at': row[9]
             }
-        print(f"Cache miss for {lat},{lon}")
+        logger.info(f"Cache miss for {lat},{lon}")
         return None
 
 
@@ -437,7 +494,7 @@ async def cache_aqi(lat, lon, aqi_data):
             )
         )
         await db.commit()
-        print(f"Cached AQI data for {lat},{lon}")
+        logger.info(f"Cached AQI data for {lat},{lon}")
 
 
 async def fetch_aqi_data(lat, lon, zoom=9):
@@ -466,7 +523,7 @@ async def fetch_aqi_data(lat, lon, zoom=9):
             data = response.json()
 
             if data.get('status') != 'ok':
-                print(f"API error: {data}")
+                logger.info(f"API error: {data}")
                 return None
 
             aqi_info = data['data']
@@ -523,7 +580,7 @@ async def fetch_aqi_data(lat, lon, zoom=9):
             return result
 
     except Exception as e:
-        print(f"Error fetching AQI data: {e}")
+        logger.info(f"Error fetching AQI data: {e}")
         return None
 
 
@@ -556,7 +613,7 @@ async def get_aqi():
             return jsonify({'error': f'Could not find location for address: {address}'}), 400
         lat = geocode_result['lat']
         lon = geocode_result['lon']
-        print(f"Using geocoded coordinates: {lat}, {lon}")
+        logger.info(f"Using geocoded coordinates: {lat}, {lon}")
 
     # Check we have coordinates
     if lat is None or lon is None:
@@ -585,14 +642,14 @@ async def startup():
     """Initialize on startup"""
     global TRMNL_IPS
 
-    print("Starting TRMNL AQI Plugin...")
-    print(f"AQICN API Key: {'*' * 10}{AQICN_API_KEY[-4:] if AQICN_API_KEY else 'NOT SET'}")
-    print(f"Cache duration: {CACHE_HOURS} hours")
-    print(f"IP Whitelist enabled: {ENABLE_IP_WHITELIST}")
+    logger.info("Starting TRMNL AQI Plugin...")
+    logger.info(f"AQICN API Key: {'*' * 10}{AQICN_API_KEY[-4:] if AQICN_API_KEY else 'NOT SET'}")
+    logger.info(f"Cache duration: {CACHE_HOURS} hours")
+    logger.info(f"IP Whitelist enabled: {ENABLE_IP_WHITELIST}")
 
     # Initialize database
     await init_db()
-    print("Database initialized")
+    logger.info("Database initialized")
 
     # Fetch TRMNL IPs if whitelist is enabled
     if ENABLE_IP_WHITELIST:
