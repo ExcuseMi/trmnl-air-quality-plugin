@@ -147,7 +147,89 @@ async def init_db():
                 fetched_at TIMESTAMP
             )
         ''')
+
+        # Geocoding cache table
+        await db.execute('''
+            CREATE TABLE IF NOT EXISTS geocoding_cache (
+                address TEXT PRIMARY KEY,
+                lat REAL,
+                lon REAL,
+                display_name TEXT,
+                cached_at TIMESTAMP
+            )
+        ''')
         await db.commit()
+
+
+async def geocode_address(address):
+    """
+    Convert address to lat/lon coordinates using Nominatim (OpenStreetMap).
+    Caches results to avoid repeated API calls.
+    """
+    # Check cache first
+    async with aiosqlite.connect(DB_PATH) as db:
+        cursor = await db.execute(
+            'SELECT lat, lon, display_name FROM geocoding_cache WHERE address = ?',
+            (address,)
+        )
+        row = await cursor.fetchone()
+        if row:
+            print(f"Geocoding cache hit for: {address}")
+            return {
+                'lat': row[0],
+                'lon': row[1],
+                'display_name': row[2]
+            }
+
+    # Call Nominatim API
+    url = "https://nominatim.openstreetmap.org/search"
+    params = {
+        'q': address,
+        'format': 'json',
+        'limit': 1
+    }
+    headers = {
+        'User-Agent': 'TRMNL-AQI-Plugin/1.0'
+    }
+
+    try:
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            response = await client.get(url, params=params, headers=headers)
+
+            if response.status_code == 200:
+                data = response.json()
+
+                if data and len(data) > 0:
+                    result = data[0]
+                    lat = float(result['lat'])
+                    lon = float(result['lon'])
+                    display_name = result['display_name']
+
+                    # Cache the result
+                    async with aiosqlite.connect(DB_PATH) as db:
+                        await db.execute(
+                            '''INSERT OR REPLACE INTO geocoding_cache 
+                               (address, lat, lon, display_name, cached_at)
+                               VALUES (?, ?, ?, ?, ?)''',
+                            (address, lat, lon, display_name, datetime.now())
+                        )
+                        await db.commit()
+
+                    print(f"Geocoded '{address}' to ({lat}, {lon})")
+                    return {
+                        'lat': lat,
+                        'lon': lon,
+                        'display_name': display_name
+                    }
+                else:
+                    print(f"No results found for address: {address}")
+                    return None
+            else:
+                print(f"Geocoding API error: {response.status_code}")
+                return None
+    except Exception as e:
+        print(f"Error geocoding address: {e}")
+        return None
 
 
 def lat_lon_to_tile(lat, lon, zoom):
@@ -390,16 +472,28 @@ async def get_aqi():
     """
     Get AQI data for a location (returns JSON only)
     Query params:
-      - lat: latitude
-      - lon: longitude
+      - lat: latitude (optional if address provided)
+      - lon: longitude (optional if address provided)
+      - address: location address (optional if lat/lon provided)
       - zoom: tile zoom level (default: 9)
     """
     lat = request.args.get('lat', type=float)
     lon = request.args.get('lon', type=float)
+    address = request.args.get('address', type=str)
     zoom = request.args.get('zoom', default=9, type=int)
 
+    # If address provided, geocode it
+    if address:
+        geocode_result = await geocode_address(address)
+        if not geocode_result:
+            return jsonify({'error': f'Could not find location for address: {address}'}), 400
+        lat = geocode_result['lat']
+        lon = geocode_result['lon']
+        print(f"Using geocoded coordinates: {lat}, {lon}")
+
+    # Check we have coordinates
     if lat is None or lon is None:
-        return jsonify({'error': 'Missing required parameters: lat, lon'}), 400
+        return jsonify({'error': 'Missing required parameters: (lat, lon) or address'}), 400
 
     aqi_data = await fetch_aqi_data(lat, lon, zoom)
 
