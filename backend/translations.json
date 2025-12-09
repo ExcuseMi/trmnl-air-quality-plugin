@@ -20,12 +20,12 @@
       "co": "CO"
     },
     "health_advice": {
-      "good": "Air quality is good. Enjoy outdoor activities!",
-      "moderate": "Air quality is acceptable for most people.",
-      "unhealthy_sensitive": "Sensitive groups should reduce prolonged outdoor exertion.",
-      "unhealthy": "Everyone should reduce prolonged outdoor exertion.",
-      "very_unhealthy": "Avoid prolonged outdoor exertion. Keep windows closed.",
-      "hazardous": "Stay indoors and keep windows closed. Health alert!"
+      "good": "Great day for outdoor activities.",
+      "moderate": "Air quality is acceptable.",
+      "unhealthy_sensitive": "Sensitive groups: limit outdoor time.",
+      "unhealthy": "Reduce outdoor activity.",
+      "very_unhealthy": "Avoid outdoor activity. Close windows.",
+      "hazardous": "Stay indoors. Health alert!"
     },
     "no_data": "No data available",
     "error": "Error loading data"
@@ -51,12 +51,12 @@
       "co": "CO"
     },
     "health_advice": {
-      "good": "La qualité de l'air est bonne. Profitez des activités en plein air !",
-      "moderate": "La qualité de l'air est acceptable pour la plupart des gens.",
-      "unhealthy_sensitive": "Les groupes sensibles devraient réduire les efforts prolongés en plein air.",
-      "unhealthy": "Tout le monde devrait réduire les efforts prolongés en plein air.",
-      "very_unhealthy": "Évitez les efforts prolongés en plein air. Gardez les fenêtres fermées.",
-      "hazardous": "Restez à l'intérieur et gardez les fenêtres fermées. Alerte santé !"
+      "good": "Idéal pour les activités extérieures.",
+      "moderate": "Qualité de l'air acceptable.",
+      "unhealthy_sensitive": "Groupes sensibles : limitez sorties.",
+      "unhealthy": "Réduisez activités extérieures.",
+      "very_unhealthy": "Évitez sorties. Fermez fenêtres.",
+      "hazardous": "Restez à l'intérieur. Alerte !"
     },
     "no_data": "Aucune donnée disponible",
     "error": "Erreur de chargement des données"
@@ -82,12 +82,12 @@
       "co": "CO"
     },
     "health_advice": {
-      "good": "De luchtkwaliteit is goed. Geniet van buitenactiviteiten!",
-      "moderate": "De luchtkwaliteit is acceptabel voor de meeste mensen.",
-      "unhealthy_sensitive": "Gevoelige groepen moeten langdurige inspanningen buitenshuis verminderen.",
-      "unhealthy": "Iedereen moet langdurige inspanningen buitenshuis verminderen.",
-      "very_unhealthy": "Vermijd langdurige inspanningen buitenshuis. Houd ramen gesloten.",
-      "hazardous": "Blijf binnen en houd ramen gesloten. Gezondheidsalert!"
+      "good": "Uitstekend voor buitenactiviteiten.",
+      "moderate": "Luchtkwaliteit is acceptabel.",
+      "unhealthy_sensitive": "Gevoelige groepen: beperk buiten tijd.",
+      "unhealthy": "Verminder buitenactiviteit.",
+      "very_unhealthy": "Vermijd buitenactiviteit. Sluit ramen.",
+      "hazardous": "Blijf binnen. Gezondheidsalarm!"
     },
     "no_data": "Geen gegevens beschikbaar",
     "error": "Fout bij laden van gegevens"
@@ -113,12 +113,12 @@
       "co": "CO"
     },
     "health_advice": {
-      "good": "Die Luftqualität ist gut. Genießen Sie Aktivitäten im Freien!",
-      "moderate": "Die Luftqualität ist für die meisten Menschen akzeptabel.",
-      "unhealthy_sensitive": "Empfindliche Gruppen sollten längere Anstrengungen im Freien reduzieren.",
-      "unhealthy": "Jeder sollte längere Anstrengungen im Freien reduzieren.",
-      "very_unhealthy": "Vermeiden Sie längere Anstrengungen im Freien. Fenster geschlossen halten.",
-      "hazardous": "Bleiben Sie drinnen und halten Sie die Fenster geschlossen. Gesundheitsalarm!"
+      "good": "Perfekt für Aktivitäten im Freien.",
+      "moderate": "Luftqualität ist akzeptabel.",
+      "unhealthy_sensitive": "Empfindliche: Outdoor begrenzen.",
+      "unhealthy": "Outdoor-Aktivität reduzieren.",
+      "very_unhealthy": "Draußen vermeiden. Fenster schließen.",
+      "hazardous": "Drinnen bleiben. Gesundheitsalarm!"
     },
     "no_data": "Keine Daten verfügbar",
     "error": "Fehler beim Laden der Daten"
@@ -144,12 +144,12 @@
       "co": "CO"
     },
     "health_advice": {
-      "good": "La calidad del aire es buena. ¡Disfrute de actividades al aire libre!",
-      "moderate": "La calidad del aire es aceptable para la mayoría de las personas.",
-      "unhealthy_sensitive": "Los grupos sensibles deben reducir el esfuerzo prolongado al aire libre.",
-      "unhealthy": "Todos deben reducir el esfuerzo prolongado al aire libre.",
-      "very_unhealthy": "Evite el esfuerzo prolongado al aire libre. Mantenga las ventanas cerradas.",
-      "hazardous": "¡Permanezca en el interior y mantenga las ventanas cerradas. Alerta de salud!"
+      "good": "Excelente para actividades al aire libre.",
+      "moderate": "Calidad del aire aceptable.",
+      "unhealthy_sensitive": "Grupos sensibles: limitar exterior.",
+      "unhealthy": "Reducir actividad exterior.",
+      "very_unhealthy": "Evitar actividad exterior. Cerrar ventanas.",
+      "hazardous": "Quedarse dentro. ¡Alerta de salud!"
     },
     "no_data": "No hay datos disponibles",
     "error": "Error al cargar datos"
@@ -175,12 +175,12 @@
       "co": "CO"
     },
     "health_advice": {
-      "good": "La qualità dell'aria è buona. Godetevi le attività all'aperto!",
-      "moderate": "La qualità dell'aria è accettabile per la maggior parte delle persone.",
-      "unhealthy_sensitive": "I gruppi sensibili dovrebbero ridurre lo sforzo prolungato all'aperto.",
-      "unhealthy": "Tutti dovrebbero ridurre lo sforzo prolungato all'aperto.",
-      "very_unhealthy": "Evitare lo sforzo prolungato all'aperto. Tenere le finestre chiuse.",
-      "hazardous": "Rimanere al chiuso e tenere le finestre chiuse. Allarme sanitario!"
+      "good": "Ottimo per attività all'aperto.",
+      "moderate": "Qualità dell'aria accettabile.",
+      "unhealthy_sensitive": "Gruppi sensibili: limitare uscite.",
+      "unhealthy": "Ridurre attività all'aperto.",
+      "very_unhealthy": "Evitare uscite. Chiudere finestre.",
+      "hazardous": "Stare dentro. Allarme sanitario!"
     },
     "no_data": "Nessun dato disponibile",
     "error": "Errore nel caricamento dei dati"
@@ -206,12 +206,12 @@
       "co": "CO"
     },
     "health_advice": {
-      "good": "A qualidade do ar é boa. Aproveite atividades ao ar livre!",
-      "moderate": "A qualidade do ar é aceitável para a maioria das pessoas.",
-      "unhealthy_sensitive": "Grupos sensíveis devem reduzir esforços prolongados ao ar livre.",
-      "unhealthy": "Todos devem reduzir esforços prolongados ao ar livre.",
-      "very_unhealthy": "Evite esforços prolongados ao ar livre. Mantenha janelas fechadas.",
-      "hazardous": "Fique em ambientes fechados e mantenha janelas fechadas. Alerta de saúde!"
+      "good": "Ótimo para atividades ao ar livre.",
+      "moderate": "Qualidade do ar aceitável.",
+      "unhealthy_sensitive": "Grupos sensíveis: limitar saídas.",
+      "unhealthy": "Reduzir atividade externa.",
+      "very_unhealthy": "Evitar atividade externa. Fechar janelas.",
+      "hazardous": "Ficar dentro. Alerta de saúde!"
     },
     "no_data": "Nenhum dado disponível",
     "error": "Erro ao carregar dados"
@@ -237,12 +237,12 @@
       "co": "CO"
     },
     "health_advice": {
-      "good": "Jakość powietrza jest dobra. Ciesz się aktywnościami na świeżym powietrzu!",
-      "moderate": "Jakość powietrza jest akceptowalna dla większości osób.",
-      "unhealthy_sensitive": "Grupy wrażliwe powinny ograniczyć przedłużony wysiłek na świeżym powietrzu.",
-      "unhealthy": "Wszyscy powinni ograniczyć przedłużony wysiłek na świeżym powietrzu.",
-      "very_unhealthy": "Unikaj przedłużonego wysiłku na świeżym powietrzu. Trzymaj okna zamknięte.",
-      "hazardous": "Pozostań w pomieszczeniach i trzymaj okna zamknięte. Alert zdrowotny!"
+      "good": "Świetnie na aktywność na świeżym powietrzu.",
+      "moderate": "Jakość powietrza akceptowalna.",
+      "unhealthy_sensitive": "Grupy wrażliwe: ogranicz wyjścia.",
+      "unhealthy": "Ogranicz aktywność na zewnątrz.",
+      "very_unhealthy": "Unikaj wyjść. Zamknij okna.",
+      "hazardous": "Zostań w domu. Alert zdrowotny!"
     },
     "no_data": "Brak dostępnych danych",
     "error": "Błąd ładowania danych"
@@ -268,12 +268,12 @@
       "co": "CO"
     },
     "health_advice": {
-      "good": "Luftkvaliteten är bra. Njut av utomhusaktiviteter!",
-      "moderate": "Luftkvaliteten är acceptabel för de flesta människor.",
-      "unhealthy_sensitive": "Känsliga grupper bör minska långvarig utomhusansträngning.",
-      "unhealthy": "Alla bör minska långvarig utomhusansträngning.",
-      "very_unhealthy": "Undvik långvarig utomhusansträngning. Håll fönstren stängda.",
-      "hazardous": "Stanna inomhus och håll fönstren stängda. Hälsovarning!"
+      "good": "Utmärkt för utomhusaktiviteter.",
+      "moderate": "Luftkvaliteten är acceptabel.",
+      "unhealthy_sensitive": "Känsliga grupper: begränsa utevistelse.",
+      "unhealthy": "Minska utomhusaktivitet.",
+      "very_unhealthy": "Undvik utomhusaktivitet. Stäng fönster.",
+      "hazardous": "Stanna inne. Hälsovarning!"
     },
     "no_data": "Ingen data tillgänglig",
     "error": "Fel vid laddning av data"
@@ -299,12 +299,12 @@
       "co": "CO"
     },
     "health_advice": {
-      "good": "Luftkvaliteten er god. Nyd udendørsaktiviteter!",
-      "moderate": "Luftkvaliteten er acceptabel for de fleste mennesker.",
-      "unhealthy_sensitive": "Følsomme grupper bør reducere langvarig udendørs anstrengelse.",
-      "unhealthy": "Alle bør reducere langvarig udendørs anstrengelse.",
-      "very_unhealthy": "Undgå langvarig udendørs anstrengelse. Hold vinduerne lukkede.",
-      "hazardous": "Bliv indendørs og hold vinduerne lukkede. Sundhedsalarm!"
+      "good": "Perfekt til udendørs aktiviteter.",
+      "moderate": "Luftkvaliteten er acceptabel.",
+      "unhealthy_sensitive": "Følsomme grupper: begræns udetid.",
+      "unhealthy": "Reducer udendørs aktivitet.",
+      "very_unhealthy": "Undgå udendørs aktivitet. Luk vinduer.",
+      "hazardous": "Bliv indendørs. Sundhedsalarm!"
     },
     "no_data": "Ingen data tilgængelig",
     "error": "Fejl ved indlæsning af data"
@@ -330,12 +330,12 @@
       "co": "CO"
     },
     "health_advice": {
-      "good": "Luftkvaliteten er god. Nyt utendørsaktiviteter!",
-      "moderate": "Luftkvaliteten er akseptabel for de fleste mennesker.",
-      "unhealthy_sensitive": "Følsomme grupper bør redusere langvarig utendørs anstrengelse.",
-      "unhealthy": "Alle bør redusere langvarig utendørs anstrengelse.",
-      "very_unhealthy": "Unngå langvarig utendørs anstrengelse. Hold vinduene lukket.",
-      "hazardous": "Bli innendørs og hold vinduene lukket. Helsevarsel!"
+      "good": "Perfekt for utendørs aktiviteter.",
+      "moderate": "Luftkvaliteten er akseptabel.",
+      "unhealthy_sensitive": "Følsomme grupper: begrens utetid.",
+      "unhealthy": "Reduser utendørs aktivitet.",
+      "very_unhealthy": "Unngå utendørs aktivitet. Lukk vinduer.",
+      "hazardous": "Bli innendørs. Helsevarsel!"
     },
     "no_data": "Ingen data tilgjengelig",
     "error": "Feil ved lasting av data"
@@ -361,12 +361,12 @@
       "co": "CO"
     },
     "health_advice": {
-      "good": "Ilmanlaatu on hyvä. Nauti ulkoilmasta!",
-      "moderate": "Ilmanlaatu on hyväksyttävä useimmille ihmisille.",
-      "unhealthy_sensitive": "Herkät ryhmät voivat harkita pitkäaikaisen ulkoilmassa rasituksen vähentämistä.",
-      "unhealthy": "Kaikkien tulisi vähentää pitkäaikaista ulkoilmassa rasitusta.",
-      "very_unhealthy": "Vältä pitkäaikaista ulkoilmassa rasitusta. Pidä ikkunat kiinni.",
-      "hazardous": "Pysy sisällä ja pidä ikkunat kiinni. Terveyshälytys!"
+      "good": "Erinomainen ulkoiluun.",
+      "moderate": "Ilmanlaatu on hyväksyttävä.",
+      "unhealthy_sensitive": "Herkät ryhmät: rajoita ulkoilua.",
+      "unhealthy": "Vähennä ulkoilua.",
+      "very_unhealthy": "Vältä ulkoilua. Sulje ikkunat.",
+      "hazardous": "Pysy sisällä. Terveyshälytys!"
     },
     "no_data": "Ei saatavilla olevia tietoja",
     "error": "Virhe tietojen lataamisessa"
@@ -392,12 +392,12 @@
       "co": "CO"
     },
     "health_advice": {
-      "good": "Kvalita ovzduší je dobrá. Užijte si venkovní aktivity!",
-      "moderate": "Kvalita ovzduší je přijatelná pro většinu lidí.",
-      "unhealthy_sensitive": "Citlivé skupiny by měly omezit dlouhodobou venkovní námahu.",
-      "unhealthy": "Každý by měl omezit dlouhodobou venkovní námahu.",
-      "very_unhealthy": "Vyhněte se dlouhodobé venkovní námaze. Udržujte okna zavřená.",
-      "hazardous": "Zůstaňte uvnitř a udržujte okna zavřená. Zdravotní výstraha!"
+      "good": "Skvělé pro venkovní aktivity.",
+      "moderate": "Kvalita ovzduší je přijatelná.",
+      "unhealthy_sensitive": "Citlivé skupiny: omezte pobyt venku.",
+      "unhealthy": "Omezte venkovní činnost.",
+      "very_unhealthy": "Vyhněte se venku. Zavřete okna.",
+      "hazardous": "Zůstaňte uvnitř. Zdravotní výstraha!"
     },
     "no_data": "Žádná dostupná data",
     "error": "Chyba při načítání dat"
@@ -423,12 +423,12 @@
       "co": "CO"
     },
     "health_advice": {
-      "good": "A levegő minősége jó. Élvezze a szabadtéri tevékenységeket!",
-      "moderate": "A levegő minősége elfogadható a legtöbb ember számára.",
-      "unhealthy_sensitive": "Az érzékeny csoportoknak csökkenteniük kell a hosszan tartó szabadtéri erőfeszítést.",
-      "unhealthy": "Mindenkinek csökkentenie kell a hosszan tartó szabadtéri erőfeszítést.",
-      "very_unhealthy": "Kerülje a hosszan tartó szabadtéri erőfeszítést. Tartsa zárva az ablakokat.",
-      "hazardous": "Maradjon bent és tartsa zárva az ablakokat. Egészségügyi riasztás!"
+      "good": "Kiváló szabadtéri tevékenységekhez.",
+      "moderate": "A levegő minősége elfogadható.",
+      "unhealthy_sensitive": "Érzékenyek: korlátozzák kinti időt.",
+      "unhealthy": "Csökkentsék szabadtéri tevékenységet.",
+      "very_unhealthy": "Kerüljék a szabadtért. Zárják ablakokat.",
+      "hazardous": "Maradjanak bent. Egészségügyi riasztás!"
     },
     "no_data": "Nincs elérhető adat",
     "error": "Hiba az adatok betöltése során"
@@ -454,12 +454,12 @@
       "co": "CO"
     },
     "health_advice": {
-      "good": "Calitatea aerului este bună. Bucurați-vă de activitățile în aer liber!",
-      "moderate": "Calitatea aerului este acceptabilă pentru majoritatea oamenilor.",
-      "unhealthy_sensitive": "Grupurile sensibile ar trebui să reducă efortul prelungit în aer liber.",
-      "unhealthy": "Toată lumea ar trebui să reducă efortul prelungit în aer liber.",
-      "very_unhealthy": "Evitați efortul prelungit în aer liber. Țineți ferestrele închise.",
-      "hazardous": "Rămâneți în interior și țineți ferestrele închise. Alertă de sănătate!"
+      "good": "Excelent pentru activități în aer liber.",
+      "moderate": "Calitatea aerului este acceptabilă.",
+      "unhealthy_sensitive": "Grupuri sensibile: limitați ieșirile.",
+      "unhealthy": "Reduceți activitatea exterioară.",
+      "very_unhealthy": "Evitați activitatea exterioară. Închideți geamurile.",
+      "hazardous": "Rămâneți înăuntru. Alertă de sănătate!"
     },
     "no_data": "Nu există date disponibile",
     "error": "Eroare la încărcarea datelor"
@@ -485,12 +485,12 @@
       "co": "CO"
     },
     "health_advice": {
-      "good": "Hava kalitesi iyi. Açık hava aktivitelerinin tadını çıkarın!",
-      "moderate": "Hava kalitesi çoğu insan için kabul edilebilir.",
-      "unhealthy_sensitive": "Hassas gruplar uzun süreli açık hava egzersizini azaltmalıdır.",
-      "unhealthy": "Herkes uzun süreli açık hava egzersizini azaltmalıdır.",
-      "very_unhealthy": "Uzun süreli açık hava egzersizinden kaçının. Pencereleri kapalı tutun.",
-      "hazardous": "İçeride kalın ve pencereleri kapalı tutun. Sağlık alarmı!"
+      "good": "Açık hava aktiviteleri için harika.",
+      "moderate": "Hava kalitesi kabul edilebilir.",
+      "unhealthy_sensitive": "Hassaslar: dış mekan süresini sınırlayın.",
+      "unhealthy": "Dış mekan aktivitesini azaltın.",
+      "very_unhealthy": "Dışarıdan kaçının. Pencereleri kapatın.",
+      "hazardous": "İçeride kalın. Sağlık alarmı!"
     },
     "no_data": "Veri mevcut değil",
     "error": "Veri yükleme hatası"
@@ -516,12 +516,12 @@
       "co": "CO"
     },
     "health_advice": {
-      "good": "Η ποιότητα του αέρα είναι καλή. Απολαύστε υπαίθριες δραστηριότητες!",
-      "moderate": "Η ποιότητα του αέρα είναι αποδεκτή για τους περισσότερους ανθρώπους.",
-      "unhealthy_sensitive": "Οι ευαίσθητες ομάδες πρέπει να μειώσουν την παρατεταμένη υπαίθρια προσπάθεια.",
-      "unhealthy": "Όλοι πρέπει να μειώσουν την παρατεταμένη υπαίθρια προσπάθεια.",
-      "very_unhealthy": "Αποφύγετε την παρατεταμένη υπαίθρια προσπάθεια. Κρατήστε τα παράθυρα κλειστά.",
-      "hazardous": "Μείνετε σε εσωτερικούς χώρους και κρατήστε τα παράθυρα κλειστά. Συναγερμός υγείας!"
+      "good": "Εξαιρετικό για υπαίθριες δραστηριότητες.",
+      "moderate": "Η ποιότητα του αέρα είναι αποδεκτή.",
+      "unhealthy_sensitive": "Ευαίσθητες ομάδες: περιορίστε έξοδο.",
+      "unhealthy": "Μειώστε υπαίθρια δραστηριότητα.",
+      "very_unhealthy": "Αποφύγετε έξοδο. Κλείστε παράθυρα.",
+      "hazardous": "Μείνετε μέσα. Συναγερμός υγείας!"
     },
     "no_data": "Δεν υπάρχουν διαθέσιμα δεδομένα",
     "error": "Σφάλμα φόρτωσης δεδομένων"
@@ -547,12 +547,12 @@
       "co": "CO"
     },
     "health_advice": {
-      "good": "Качество воздуха хорошее. Наслаждайтесь активным отдыхом!",
-      "moderate": "Качество воздуха приемлемо для большинства людей.",
-      "unhealthy_sensitive": "Чувствительным группам следует сократить длительное пребывание на открытом воздухе.",
-      "unhealthy": "Всем следует сократить длительное пребывание на открытом воздухе.",
-      "very_unhealthy": "Избегайте длительного пребывания на открытом воздухе. Держите окна закрытыми.",
-      "hazardous": "Оставайтесь в помещении и держите окна закрытыми. Угроза здоровью!"
+      "good": "Отлично для активного отдыха.",
+      "moderate": "Качество воздуха приемлемо.",
+      "unhealthy_sensitive": "Чувствительным: ограничить выход.",
+      "unhealthy": "Сократить активность на улице.",
+      "very_unhealthy": "Избегать улицы. Закрыть окна.",
+      "hazardous": "Оставайтесь дома. Угроза здоровью!"
     },
     "no_data": "Нет доступных данных",
     "error": "Ошибка загрузки данных"
@@ -578,12 +578,12 @@
       "co": "CO"
     },
     "health_advice": {
-      "good": "Якість повітря добра. Насолоджуйтесь активним відпочинком!",
-      "moderate": "Якість повітря прийнятна для більшості людей.",
-      "unhealthy_sensitive": "Чутливим групам слід скоротити тривале перебування на відкритому повітрі.",
-      "unhealthy": "Всім слід скоротити тривале перебування на відкритому повітрі.",
-      "very_unhealthy": "Уникайте тривалого перебування на відкритому повітрі. Тримайте вікна зачиненими.",
-      "hazardous": "Залишайтеся в приміщенні та тримайте вікна зачиненими. Загроза здоров'ю!"
+      "good": "Чудово для активного відпочинку.",
+      "moderate": "Якість повітря прийнятна.",
+      "unhealthy_sensitive": "Чутливим: обмежити вихід.",
+      "unhealthy": "Скоротити активність надворі.",
+      "very_unhealthy": "Уникати вулиці. Зачинити вікна.",
+      "hazardous": "Залишайтеся вдома. Загроза здоров'ю!"
     },
     "no_data": "Немає доступних даних",
     "error": "Помилка завантаження даних"
@@ -609,12 +609,12 @@
       "co": "CO"
     },
     "health_advice": {
-      "good": "空気質は良好です。屋外活動をお楽しみください！",
-      "moderate": "空気質はほとんどの人に許容範囲です。",
-      "unhealthy_sensitive": "敏感なグループは長時間の屋外活動を減らすべきです。",
-      "unhealthy": "誰もが長時間の屋外活動を減らすべきです。",
-      "very_unhealthy": "長時間の屋外活動を避けてください。窓を閉めてください。",
-      "hazardous": "屋内にいて、窓を閉めてください。健康警報！"
+      "good": "屋外活動に最適。",
+      "moderate": "空気質は許容範囲。",
+      "unhealthy_sensitive": "敏感な人：屋外を制限。",
+      "unhealthy": "屋外活動を減らす。",
+      "very_unhealthy": "屋外を避ける。窓を閉める。",
+      "hazardous": "屋内に。健康警報！"
     },
     "no_data": "データがありません",
     "error": "データの読み込みエラー"
@@ -640,12 +640,12 @@
       "co": "CO"
     },
     "health_advice": {
-      "good": "空气质量良好。享受户外活动！",
-      "moderate": "空气质量对大多数人来说是可接受的。",
-      "unhealthy_sensitive": "敏感人群应减少长时间户外活动。",
-      "unhealthy": "每个人都应减少长时间户外活动。",
-      "very_unhealthy": "避免长时间户外活动。保持窗户关闭。",
-      "hazardous": "待在室内并保持窗户关闭。健康警报！"
+      "good": "适合户外活动。",
+      "moderate": "空气质量可接受。",
+      "unhealthy_sensitive": "敏感人群：限制外出。",
+      "unhealthy": "减少户外活动。",
+      "very_unhealthy": "避免户外。关闭窗户。",
+      "hazardous": "待在室内。健康警报！"
     },
     "no_data": "无可用数据",
     "error": "加载数据错误"
@@ -671,12 +671,12 @@
       "co": "CO"
     },
     "health_advice": {
-      "good": "대기질이 좋습니다. 야외 활동을 즐기세요!",
-      "moderate": "대기질이 대부분의 사람들에게 허용됩니다.",
-      "unhealthy_sensitive": "민감한 그룹은 장시간 야외 활동을 줄여야 합니다.",
-      "unhealthy": "모두가 장시간 야외 활동을 줄여야 합니다.",
-      "very_unhealthy": "장시간 야외 활동을 피하세요. 창문을 닫아 두세요.",
-      "hazardous": "실내에 머물고 창문을 닫아 두세요. 건강 경보!"
+      "good": "야외 활동에 좋음.",
+      "moderate": "대기질은 허용 가능.",
+      "unhealthy_sensitive": "민감군: 외출 제한.",
+      "unhealthy": "야외 활동 줄이기.",
+      "very_unhealthy": "외출 피하기. 창문 닫기.",
+      "hazardous": "실내 머물기. 건강 경보!"
     },
     "no_data": "사용 가능한 데이터가 없습니다",
     "error": "데이터 로딩 오류"
@@ -702,12 +702,12 @@
       "co": "CO"
     },
     "health_advice": {
-      "good": "جودة الهواء جيدة. استمتع بالأنشطة الخارجية!",
-      "moderate": "جودة الهواء مقبولة لمعظم الناس.",
-      "unhealthy_sensitive": "يجب على الفئات الحساسة تقليل النشاط الخارجي المطول.",
-      "unhealthy": "يجب على الجميع تقليل النشاط الخارجي المطول.",
-      "very_unhealthy": "تجنب النشاط الخارجي المطول. أغلق النوافذ.",
-      "hazardous": "ابق في الداخل وأغلق النوافذ. تنبيه صحي!"
+      "good": "رائع للأنشطة الخارجية.",
+      "moderate": "جودة الهواء مقبولة.",
+      "unhealthy_sensitive": "الفئات الحساسة: قللوا الخروج.",
+      "unhealthy": "قللوا النشاط الخارجي.",
+      "very_unhealthy": "تجنبوا الخروج. أغلقوا النوافذ.",
+      "hazardous": "ابقوا بالداخل. تنبيه صحي!"
     },
     "no_data": "لا توجد بيانات متاحة",
     "error": "خطأ في تحميل البيانات"
@@ -733,12 +733,12 @@
       "co": "CO"
     },
     "health_advice": {
-      "good": "איכות האוויר טובה. תהנו מפעילויות בחוץ!",
-      "moderate": "איכות האוויר מקובלת עבור רוב האנשים.",
-      "unhealthy_sensitive": "קבוצות רגישות צריכות להפחית מאמץ ממושך בחוץ.",
-      "unhealthy": "כולם צריכים להפחית מאמץ ממושך בחוץ.",
-      "very_unhealthy": "הימנעו ממאמץ ממושך בחוץ. שמרו על חלונות סגורים.",
-      "hazardous": "הישארו בפנים ושמרו על חלונות סגורים. התראת בריאות!"
+      "good": "מצוין לפעילויות בחוץ.",
+      "moderate": "איכות האוויר מקובלת.",
+      "unhealthy_sensitive": "רגישים: הגבילו יציאה.",
+      "unhealthy": "הפחיתו פעילות בחוץ.",
+      "very_unhealthy": "הימנעו מיציאה. סגרו חלונות.",
+      "hazardous": "הישארו בפנים. התראת בריאות!"
     },
     "no_data": "אין נתונים זמינים",
     "error": "שגיאה בטעינת נתונים"
@@ -764,12 +764,12 @@
       "co": "CO"
     },
     "health_advice": {
-      "good": "वायु गुणवत्ता अच्छी है। बाहरी गतिविधियों का आनंद लें!",
-      "moderate": "वायु गुणवत्ता अधिकांश लोगों के लिए स्वीकार्य है।",
-      "unhealthy_sensitive": "संवेदनशील समूहों को लंबे समय तक बाहरी प्रयास कम करना चाहिए।",
-      "unhealthy": "सभी को लंबे समय तक बाहरी प्रयास कम करना चाहिए।",
-      "very_unhealthy": "लंबे समय तक बाहरी प्रयास से बचें। खिड़कियां बंद रखें।",
-      "hazardous": "घर के अंदर रहें और खिड़कियां बंद रखें। स्वास्थ्य चेतावनी!"
+      "good": "बाहरी गतिविधियों के लिए बढ़िया।",
+      "moderate": "वायु गुणवत्ता स्वीकार्य।",
+      "unhealthy_sensitive": "संवेदनशील: बाहर सीमित करें।",
+      "unhealthy": "बाहरी गतिविधि कम करें।",
+      "very_unhealthy": "बाहर से बचें। खिड़कियां बंद करें।",
+      "hazardous": "घर में रहें। स्वास्थ्य चेतावनी!"
     },
     "no_data": "कोई डेटा उपलब्ध नहीं",
     "error": "डेटा लोड करने में त्रुटि"
@@ -795,12 +795,12 @@
       "co": "CO"
     },
     "health_advice": {
-      "good": "คุณภาพอากาศดี เพลิดเพลินกับกิจกรรมกลางแจ้ง!",
-      "moderate": "คุณภาพอากาศอยู่ในระดับที่ยอมรับได้สำหรับคนส่วนใหญ่",
-      "unhealthy_sensitive": "กลุ่มเสี่ยงควรลดกิจกรรมกลางแจ้งที่ใช้เวลานาน",
-      "unhealthy": "ทุกคนควรลดกิจกรรมกลางแจ้งที่ใช้เวลานาน",
-      "very_unhealthy": "หลีกเลี่ยงกิจกรรมกลางแจ้งที่ใช้เวลานาน ปิดหน้าต่าง",
-      "hazardous": "อยู่ในอาคารและปิดหน้าต่าง คำเตือนด้านสุขภาพ!"
+      "good": "เหมาะสำหรับกิจกรรมกลางแจ้ง",
+      "moderate": "คุณภาพอากาศยอมรับได้",
+      "unhealthy_sensitive": "กลุ่มเสี่ยง: จำกัดเวลาข้างนอก",
+      "unhealthy": "ลดกิจกรรมกลางแจ้ง",
+      "very_unhealthy": "หลีกเลี่ยงข้างนอก ปิดหน้าต่าง",
+      "hazardous": "อยู่ในอาคาร คำเตือนสุขภาพ!"
     },
     "no_data": "ไม่มีข้อมูล",
     "error": "เกิดข้อผิดพลาดในการโหลดข้อมูล"
@@ -826,12 +826,12 @@
       "co": "CO"
     },
     "health_advice": {
-      "good": "Chất lượng không khí tốt. Tận hưởng các hoạt động ngoài trời!",
-      "moderate": "Chất lượng không khí chấp nhận được đối với hầu hết mọi người.",
-      "unhealthy_sensitive": "Nhóm nhạy cảm nên giảm hoạt động ngoài trời kéo dài.",
-      "unhealthy": "Mọi người nên giảm hoạt động ngoài trời kéo dài.",
-      "very_unhealthy": "Tránh hoạt động ngoài trời kéo dài. Đóng cửa sổ.",
-      "hazardous": "Ở trong nhà và đóng cửa sổ. Cảnh báo sức khỏe!"
+      "good": "Tuyệt vời cho hoạt động ngoài trời.",
+      "moderate": "Chất lượng không khí chấp nhận được.",
+      "unhealthy_sensitive": "Nhóm nhạy cảm: hạn chế ra ngoài.",
+      "unhealthy": "Giảm hoạt động ngoài trời.",
+      "very_unhealthy": "Tránh ra ngoài. Đóng cửa sổ.",
+      "hazardous": "Ở trong nhà. Cảnh báo sức khỏe!"
     },
     "no_data": "Không có dữ liệu",
     "error": "Lỗi tải dữ liệu"
@@ -857,12 +857,12 @@
       "co": "CO"
     },
     "health_advice": {
-      "good": "Kualitas udara baik. Nikmati aktivitas luar ruangan!",
-      "moderate": "Kualitas udara dapat diterima untuk sebagian besar orang.",
-      "unhealthy_sensitive": "Kelompok sensitif harus mengurangi aktivitas luar ruangan yang berkepanjangan.",
-      "unhealthy": "Semua orang harus mengurangi aktivitas luar ruangan yang berkepanjangan.",
-      "very_unhealthy": "Hindari aktivitas luar ruangan yang berkepanjangan. Tutup jendela.",
-      "hazardous": "Tetap di dalam ruangan dan tutup jendela. Peringatan kesehatan!"
+      "good": "Sangat baik untuk aktivitas luar ruangan.",
+      "moderate": "Kualitas udara dapat diterima.",
+      "unhealthy_sensitive": "Kelompok sensitif: batasi keluar.",
+      "unhealthy": "Kurangi aktivitas luar ruangan.",
+      "very_unhealthy": "Hindari keluar. Tutup jendela.",
+      "hazardous": "Tetap di dalam. Peringatan kesehatan!"
     },
     "no_data": "Tidak ada data tersedia",
     "error": "Kesalahan memuat data"
