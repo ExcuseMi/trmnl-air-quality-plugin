@@ -44,7 +44,10 @@ async def fetch_trmnl_ips():
             ips = set(data.get('data', {}).get('ipv4', []))
             ips.update(data.get('data', {}).get('ipv6', []))
 
-            logger.info(f"Fetched {len(ips)} TRMNL IPs from API")
+            ipv4_count = len(data.get('data', {}).get('ipv4', []))
+            ipv6_count = len(data.get('data', {}).get('ipv6', []))
+            logger.info(f"Fetched {len(ips)} TRMNL IPs from API ({ipv4_count} IPv4, {ipv6_count} IPv6)")
+            logger.info(f"Whitelisted IPs: {sorted(list(ips))}")
             return ips
     except Exception as e:
         logger.info(f"Warning: Failed to fetch TRMNL IPs: {e}")
