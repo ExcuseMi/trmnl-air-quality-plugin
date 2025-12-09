@@ -143,5 +143,672 @@
       "very_unhealthy": "Evite el esfuerzo prolongado al aire libre. Mantenga las ventanas cerradas.",
       "hazardous": "¡Permanezca en el interior y mantenga las ventanas cerradas. Alerta de salud!"
     }
+  },
+  "it": {
+    "air_quality": "Qualità dell'aria",
+    "tomorrow": "Domani",
+    "aqi_label": "IQA",
+    "status": {
+      "good": "Buona",
+      "moderate": "Moderata",
+      "unhealthy_sensitive": "Malsana per gruppi sensibili",
+      "unhealthy": "Malsana",
+      "very_unhealthy": "Molto malsana",
+      "hazardous": "Pericolosa"
+    },
+    "pollutants": {
+      "pm25": "PM2.5",
+      "pm10": "PM10",
+      "o3": "Ozono",
+      "no2": "NO₂",
+      "so2": "SO₂",
+      "co": "CO"
+    },
+    "health_advice": {
+      "good": "La qualità dell'aria è buona. Godetevi le attività all'aperto!",
+      "moderate": "La qualità dell'aria è accettabile per la maggior parte delle persone.",
+      "unhealthy_sensitive": "I gruppi sensibili dovrebbero ridurre lo sforzo prolungato all'aperto.",
+      "unhealthy": "Tutti dovrebbero ridurre lo sforzo prolungato all'aperto.",
+      "very_unhealthy": "Evitare lo sforzo prolungato all'aperto. Tenere le finestre chiuse.",
+      "hazardous": "Rimanere al chiuso e tenere le finestre chiuse. Allarme sanitario!"
+    }
+  },
+  "pt": {
+    "air_quality": "Qualidade do ar",
+    "tomorrow": "Amanhã",
+    "aqi_label": "IQA",
+    "status": {
+      "good": "Boa",
+      "moderate": "Moderada",
+      "unhealthy_sensitive": "Prejudicial para grupos sensíveis",
+      "unhealthy": "Prejudicial",
+      "very_unhealthy": "Muito prejudicial",
+      "hazardous": "Perigosa"
+    },
+    "pollutants": {
+      "pm25": "PM2.5",
+      "pm10": "PM10",
+      "o3": "Ozônio",
+      "no2": "NO₂",
+      "so2": "SO₂",
+      "co": "CO"
+    },
+    "health_advice": {
+      "good": "A qualidade do ar é boa. Aproveite atividades ao ar livre!",
+      "moderate": "A qualidade do ar é aceitável para a maioria das pessoas.",
+      "unhealthy_sensitive": "Grupos sensíveis devem reduzir esforços prolongados ao ar livre.",
+      "unhealthy": "Todos devem reduzir esforços prolongados ao ar livre.",
+      "very_unhealthy": "Evite esforços prolongados ao ar livre. Mantenha janelas fechadas.",
+      "hazardous": "Fique em ambientes fechados e mantenha janelas fechadas. Alerta de saúde!"
+    }
+  },
+  "pl": {
+    "air_quality": "Jakość powietrza",
+    "tomorrow": "Jutro",
+    "aqi_label": "IJP",
+    "status": {
+      "good": "Dobra",
+      "moderate": "Umiarkowana",
+      "unhealthy_sensitive": "Niezdrowa dla grup wrażliwych",
+      "unhealthy": "Niezdrowa",
+      "very_unhealthy": "Bardzo niezdrowa",
+      "hazardous": "Niebezpieczna"
+    },
+    "pollutants": {
+      "pm25": "PM2.5",
+      "pm10": "PM10",
+      "o3": "Ozon",
+      "no2": "NO₂",
+      "so2": "SO₂",
+      "co": "CO"
+    },
+    "health_advice": {
+      "good": "Jakość powietrza jest dobra. Ciesz się aktywnościami na świeżym powietrzu!",
+      "moderate": "Jakość powietrza jest akceptowalna dla większości osób.",
+      "unhealthy_sensitive": "Grupy wrażliwe powinny ograniczyć przedłużony wysiłek na świeżym powietrzu.",
+      "unhealthy": "Wszyscy powinni ograniczyć przedłużony wysiłek na świeżym powietrzu.",
+      "very_unhealthy": "Unikaj przedłużonego wysiłku na świeżym powietrzu. Trzymaj okna zamknięte.",
+      "hazardous": "Pozostań w pomieszczeniach i trzymaj okna zamknięte. Alert zdrowotny!"
+    }
+  },
+  "sv": {
+    "air_quality": "Luftkvalitet",
+    "tomorrow": "I morgon",
+    "aqi_label": "LKI",
+    "status": {
+      "good": "Bra",
+      "moderate": "Måttlig",
+      "unhealthy_sensitive": "Ohälsosam för känsliga grupper",
+      "unhealthy": "Ohälsosam",
+      "very_unhealthy": "Mycket ohälsosam",
+      "hazardous": "Farlig"
+    },
+    "pollutants": {
+      "pm25": "PM2.5",
+      "pm10": "PM10",
+      "o3": "Ozon",
+      "no2": "NO₂",
+      "so2": "SO₂",
+      "co": "CO"
+    },
+    "health_advice": {
+      "good": "Luftkvaliteten är bra. Njut av utomhusaktiviteter!",
+      "moderate": "Luftkvaliteten är acceptabel för de flesta människor.",
+      "unhealthy_sensitive": "Känsliga grupper bör minska långvarig utomhusansträngning.",
+      "unhealthy": "Alla bör minska långvarig utomhusansträngning.",
+      "very_unhealthy": "Undvik långvarig utomhusansträngning. Håll fönstren stängda.",
+      "hazardous": "Stanna inomhus och håll fönstren stängda. Hälsovarning!"
+    }
+  },
+  "da": {
+    "air_quality": "Luftkvalitet",
+    "tomorrow": "I morgen",
+    "aqi_label": "LKI",
+    "status": {
+      "good": "God",
+      "moderate": "Moderat",
+      "unhealthy_sensitive": "Usund for følsomme grupper",
+      "unhealthy": "Usund",
+      "very_unhealthy": "Meget usund",
+      "hazardous": "Farlig"
+    },
+    "pollutants": {
+      "pm25": "PM2.5",
+      "pm10": "PM10",
+      "o3": "Ozon",
+      "no2": "NO₂",
+      "so2": "SO₂",
+      "co": "CO"
+    },
+    "health_advice": {
+      "good": "Luftkvaliteten er god. Nyd udendørsaktiviteter!",
+      "moderate": "Luftkvaliteten er acceptabel for de fleste mennesker.",
+      "unhealthy_sensitive": "Følsomme grupper bør reducere langvarig udendørs anstrengelse.",
+      "unhealthy": "Alle bør reducere langvarig udendørs anstrengelse.",
+      "very_unhealthy": "Undgå langvarig udendørs anstrengelse. Hold vinduerne lukkede.",
+      "hazardous": "Bliv indendørs og hold vinduerne lukkede. Sundhedsalarm!"
+    }
+  },
+  "no": {
+    "air_quality": "Luftkvalitet",
+    "tomorrow": "I morgen",
+    "aqi_label": "LKI",
+    "status": {
+      "good": "God",
+      "moderate": "Moderat",
+      "unhealthy_sensitive": "Usunt for følsomme grupper",
+      "unhealthy": "Usunt",
+      "very_unhealthy": "Svært usunt",
+      "hazardous": "Farlig"
+    },
+    "pollutants": {
+      "pm25": "PM2.5",
+      "pm10": "PM10",
+      "o3": "Ozon",
+      "no2": "NO₂",
+      "so2": "SO₂",
+      "co": "CO"
+    },
+    "health_advice": {
+      "good": "Luftkvaliteten er god. Nyt utendørsaktiviteter!",
+      "moderate": "Luftkvaliteten er akseptabel for de fleste mennesker.",
+      "unhealthy_sensitive": "Følsomme grupper bør redusere langvarig utendørs anstrengelse.",
+      "unhealthy": "Alle bør redusere langvarig utendørs anstrengelse.",
+      "very_unhealthy": "Unngå langvarig utendørs anstrengelse. Hold vinduene lukket.",
+      "hazardous": "Bli innendørs og hold vinduene lukket. Helsevarsel!"
+    }
+  },
+  "fi": {
+    "air_quality": "Ilmanlaatu",
+    "tomorrow": "Huomenna",
+    "aqi_label": "ILI",
+    "status": {
+      "good": "Hyvä",
+      "moderate": "Kohtalainen",
+      "unhealthy_sensitive": "Epäterveellinen herkille ryhmille",
+      "unhealthy": "Epäterveellinen",
+      "very_unhealthy": "Erittäin epäterveellinen",
+      "hazardous": "Vaarallinen"
+    },
+    "pollutants": {
+      "pm25": "PM2.5",
+      "pm10": "PM10",
+      "o3": "Otsoni",
+      "no2": "NO₂",
+      "so2": "SO₂",
+      "co": "CO"
+    },
+    "health_advice": {
+      "good": "Ilmanlaatu on hyvä. Nauti ulkoilmasta!",
+      "moderate": "Ilmanlaatu on hyväksyttävä useimmille ihmisille.",
+      "unhealthy_sensitive": "Herkät ryhmät voivat harkita pitkäaikaisen ulkoilmassa rasituksen vähentämistä.",
+      "unhealthy": "Kaikkien tulisi vähentää pitkäaikaista ulkoilmassa rasitusta.",
+      "very_unhealthy": "Vältä pitkäaikaista ulkoilmassa rasitusta. Pidä ikkunat kiinni.",
+      "hazardous": "Pysy sisällä ja pidä ikkunat kiinni. Terveyshälytys!"
+    }
+  },
+  "cs": {
+    "air_quality": "Kvalita ovzduší",
+    "tomorrow": "Zítra",
+    "aqi_label": "IKO",
+    "status": {
+      "good": "Dobrá",
+      "moderate": "Mírná",
+      "unhealthy_sensitive": "Nezdravá pro citlivé skupiny",
+      "unhealthy": "Nezdravá",
+      "very_unhealthy": "Velmi nezdravá",
+      "hazardous": "Nebezpečná"
+    },
+    "pollutants": {
+      "pm25": "PM2.5",
+      "pm10": "PM10",
+      "o3": "Ozón",
+      "no2": "NO₂",
+      "so2": "SO₂",
+      "co": "CO"
+    },
+    "health_advice": {
+      "good": "Kvalita ovzduší je dobrá. Užijte si venkovní aktivity!",
+      "moderate": "Kvalita ovzduší je přijatelná pro většinu lidí.",
+      "unhealthy_sensitive": "Citlivé skupiny by měly omezit dlouhodobou venkovní námahu.",
+      "unhealthy": "Každý by měl omezit dlouhodobou venkovní námahu.",
+      "very_unhealthy": "Vyhněte se dlouhodobé venkovní námaze. Udržujte okna zavřená.",
+      "hazardous": "Zůstaňte uvnitř a udržujte okna zavřená. Zdravotní výstraha!"
+    }
+  },
+  "hu": {
+    "air_quality": "Levegőminőség",
+    "tomorrow": "Holnap",
+    "aqi_label": "LMI",
+    "status": {
+      "good": "Jó",
+      "moderate": "Közepes",
+      "unhealthy_sensitive": "Egészségtelen érzékeny csoportoknak",
+      "unhealthy": "Egészségtelen",
+      "very_unhealthy": "Nagyon egészségtelen",
+      "hazardous": "Veszélyes"
+    },
+    "pollutants": {
+      "pm25": "PM2.5",
+      "pm10": "PM10",
+      "o3": "Ózon",
+      "no2": "NO₂",
+      "so2": "SO₂",
+      "co": "CO"
+    },
+    "health_advice": {
+      "good": "A levegő minősége jó. Élvezze a szabadtéri tevékenységeket!",
+      "moderate": "A levegő minősége elfogadható a legtöbb ember számára.",
+      "unhealthy_sensitive": "Az érzékeny csoportoknak csökkenteniük kell a hosszan tartó szabadtéri erőfeszítést.",
+      "unhealthy": "Mindenkinek csökkentenie kell a hosszan tartó szabadtéri erőfeszítést.",
+      "very_unhealthy": "Kerülje a hosszan tartó szabadtéri erőfeszítést. Tartsa zárva az ablakokat.",
+      "hazardous": "Maradjon bent és tartsa zárva az ablakokat. Egészségügyi riasztás!"
+    }
+  },
+  "ro": {
+    "air_quality": "Calitatea aerului",
+    "tomorrow": "Mâine",
+    "aqi_label": "ICA",
+    "status": {
+      "good": "Bună",
+      "moderate": "Moderată",
+      "unhealthy_sensitive": "Nesănătoasă pentru grupuri sensibile",
+      "unhealthy": "Nesănătoasă",
+      "very_unhealthy": "Foarte nesănătoasă",
+      "hazardous": "Periculoasă"
+    },
+    "pollutants": {
+      "pm25": "PM2.5",
+      "pm10": "PM10",
+      "o3": "Ozon",
+      "no2": "NO₂",
+      "so2": "SO₂",
+      "co": "CO"
+    },
+    "health_advice": {
+      "good": "Calitatea aerului este bună. Bucurați-vă de activitățile în aer liber!",
+      "moderate": "Calitatea aerului este acceptabilă pentru majoritatea oamenilor.",
+      "unhealthy_sensitive": "Grupurile sensibile ar trebui să reducă efortul prelungit în aer liber.",
+      "unhealthy": "Toată lumea ar trebui să reducă efortul prelungit în aer liber.",
+      "very_unhealthy": "Evitați efortul prelungit în aer liber. Țineți ferestrele închise.",
+      "hazardous": "Rămâneți în interior și țineți ferestrele închise. Alertă de sănătate!"
+    }
+  },
+  "tr": {
+    "air_quality": "Hava kalitesi",
+    "tomorrow": "Yarın",
+    "aqi_label": "HKI",
+    "status": {
+      "good": "İyi",
+      "moderate": "Orta",
+      "unhealthy_sensitive": "Hassas gruplar için sağlıksız",
+      "unhealthy": "Sağlıksız",
+      "very_unhealthy": "Çok sağlıksız",
+      "hazardous": "Tehlikeli"
+    },
+    "pollutants": {
+      "pm25": "PM2.5",
+      "pm10": "PM10",
+      "o3": "Ozon",
+      "no2": "NO₂",
+      "so2": "SO₂",
+      "co": "CO"
+    },
+    "health_advice": {
+      "good": "Hava kalitesi iyi. Açık hava aktivitelerinin tadını çıkarın!",
+      "moderate": "Hava kalitesi çoğu insan için kabul edilebilir.",
+      "unhealthy_sensitive": "Hassas gruplar uzun süreli açık hava egzersizini azaltmalıdır.",
+      "unhealthy": "Herkes uzun süreli açık hava egzersizini azaltmalıdır.",
+      "very_unhealthy": "Uzun süreli açık hava egzersizinden kaçının. Pencereleri kapalı tutun.",
+      "hazardous": "İçeride kalın ve pencereleri kapalı tutun. Sağlık alarmı!"
+    }
+  },
+  "el": {
+    "air_quality": "Ποιότητα αέρα",
+    "tomorrow": "Αύριο",
+    "aqi_label": "ΔΠΑ",
+    "status": {
+      "good": "Καλή",
+      "moderate": "Μέτρια",
+      "unhealthy_sensitive": "Ανθυγιεινή για ευαίσθητες ομάδες",
+      "unhealthy": "Ανθυγιεινή",
+      "very_unhealthy": "Πολύ ανθυγιεινή",
+      "hazardous": "Επικίνδυνη"
+    },
+    "pollutants": {
+      "pm25": "PM2.5",
+      "pm10": "PM10",
+      "o3": "Όζον",
+      "no2": "NO₂",
+      "so2": "SO₂",
+      "co": "CO"
+    },
+    "health_advice": {
+      "good": "Η ποιότητα του αέρα είναι καλή. Απολαύστε υπαίθριες δραστηριότητες!",
+      "moderate": "Η ποιότητα του αέρα είναι αποδεκτή για τους περισσότερους ανθρώπους.",
+      "unhealthy_sensitive": "Οι ευαίσθητες ομάδες πρέπει να μειώσουν την παρατεταμένη υπαίθρια προσπάθεια.",
+      "unhealthy": "Όλοι πρέπει να μειώσουν την παρατεταμένη υπαίθρια προσπάθεια.",
+      "very_unhealthy": "Αποφύγετε την παρατεταμένη υπαίθρια προσπάθεια. Κρατήστε τα παράθυρα κλειστά.",
+      "hazardous": "Μείνετε σε εσωτερικούς χώρους και κρατήστε τα παράθυρα κλειστά. Συναγερμός υγείας!"
+    }
+  },
+  "ru": {
+    "air_quality": "Качество воздуха",
+    "tomorrow": "Завтра",
+    "aqi_label": "ИКВ",
+    "status": {
+      "good": "Хорошее",
+      "moderate": "Умеренное",
+      "unhealthy_sensitive": "Вредно для чувствительных групп",
+      "unhealthy": "Вредно",
+      "very_unhealthy": "Очень вредно",
+      "hazardous": "Опасно"
+    },
+    "pollutants": {
+      "pm25": "PM2.5",
+      "pm10": "PM10",
+      "o3": "Озон",
+      "no2": "NO₂",
+      "so2": "SO₂",
+      "co": "CO"
+    },
+    "health_advice": {
+      "good": "Качество воздуха хорошее. Наслаждайтесь активным отдыхом!",
+      "moderate": "Качество воздуха приемлемо для большинства людей.",
+      "unhealthy_sensitive": "Чувствительным группам следует сократить длительное пребывание на открытом воздухе.",
+      "unhealthy": "Всем следует сократить длительное пребывание на открытом воздухе.",
+      "very_unhealthy": "Избегайте длительного пребывания на открытом воздухе. Держите окна закрытыми.",
+      "hazardous": "Оставайтесь в помещении и держите окна закрытыми. Угроза здоровью!"
+    }
+  },
+  "uk": {
+    "air_quality": "Якість повітря",
+    "tomorrow": "Завтра",
+    "aqi_label": "ІЯП",
+    "status": {
+      "good": "Добра",
+      "moderate": "Помірна",
+      "unhealthy_sensitive": "Шкідлива для чутливих груп",
+      "unhealthy": "Шкідлива",
+      "very_unhealthy": "Дуже шкідлива",
+      "hazardous": "Небезпечна"
+    },
+    "pollutants": {
+      "pm25": "PM2.5",
+      "pm10": "PM10",
+      "o3": "Озон",
+      "no2": "NO₂",
+      "so2": "SO₂",
+      "co": "CO"
+    },
+    "health_advice": {
+      "good": "Якість повітря добра. Насолоджуйтесь активним відпочинком!",
+      "moderate": "Якість повітря прийнятна для більшості людей.",
+      "unhealthy_sensitive": "Чутливим групам слід скоротити тривале перебування на відкритому повітрі.",
+      "unhealthy": "Всім слід скоротити тривале перебування на відкритому повітрі.",
+      "very_unhealthy": "Уникайте тривалого перебування на відкритому повітрі. Тримайте вікна зачиненими.",
+      "hazardous": "Залишайтеся в приміщенні та тримайте вікна зачиненими. Загроза здоров'ю!"
+    }
+  },
+  "ja": {
+    "air_quality": "空気質",
+    "tomorrow": "明日",
+    "aqi_label": "AQI",
+    "status": {
+      "good": "良好",
+      "moderate": "普通",
+      "unhealthy_sensitive": "敏感な人に不健康",
+      "unhealthy": "不健康",
+      "very_unhealthy": "非常に不健康",
+      "hazardous": "危険"
+    },
+    "pollutants": {
+      "pm25": "PM2.5",
+      "pm10": "PM10",
+      "o3": "オゾン",
+      "no2": "NO₂",
+      "so2": "SO₂",
+      "co": "CO"
+    },
+    "health_advice": {
+      "good": "空気質は良好です。屋外活動をお楽しみください！",
+      "moderate": "空気質はほとんどの人に許容範囲です。",
+      "unhealthy_sensitive": "敏感なグループは長時間の屋外活動を減らすべきです。",
+      "unhealthy": "誰もが長時間の屋外活動を減らすべきです。",
+      "very_unhealthy": "長時間の屋外活動を避けてください。窓を閉めてください。",
+      "hazardous": "屋内にいて、窓を閉めてください。健康警報！"
+    }
+  },
+  "zh": {
+    "air_quality": "空气质量",
+    "tomorrow": "明天",
+    "aqi_label": "AQI",
+    "status": {
+      "good": "良好",
+      "moderate": "中等",
+      "unhealthy_sensitive": "对敏感人群不健康",
+      "unhealthy": "不健康",
+      "very_unhealthy": "非常不健康",
+      "hazardous": "危险"
+    },
+    "pollutants": {
+      "pm25": "PM2.5",
+      "pm10": "PM10",
+      "o3": "臭氧",
+      "no2": "NO₂",
+      "so2": "SO₂",
+      "co": "CO"
+    },
+    "health_advice": {
+      "good": "空气质量良好。享受户外活动！",
+      "moderate": "空气质量对大多数人来说是可接受的。",
+      "unhealthy_sensitive": "敏感人群应减少长时间户外活动。",
+      "unhealthy": "每个人都应减少长时间户外活动。",
+      "very_unhealthy": "避免长时间户外活动。保持窗户关闭。",
+      "hazardous": "待在室内并保持窗户关闭。健康警报！"
+    }
+  },
+  "ko": {
+    "air_quality": "대기질",
+    "tomorrow": "내일",
+    "aqi_label": "AQI",
+    "status": {
+      "good": "좋음",
+      "moderate": "보통",
+      "unhealthy_sensitive": "민감군에게 나쁨",
+      "unhealthy": "나쁨",
+      "very_unhealthy": "매우 나쁨",
+      "hazardous": "위험"
+    },
+    "pollutants": {
+      "pm25": "PM2.5",
+      "pm10": "PM10",
+      "o3": "오존",
+      "no2": "NO₂",
+      "so2": "SO₂",
+      "co": "CO"
+    },
+    "health_advice": {
+      "good": "대기질이 좋습니다. 야외 활동을 즐기세요!",
+      "moderate": "대기질이 대부분의 사람들에게 허용됩니다.",
+      "unhealthy_sensitive": "민감한 그룹은 장시간 야외 활동을 줄여야 합니다.",
+      "unhealthy": "모두가 장시간 야외 활동을 줄여야 합니다.",
+      "very_unhealthy": "장시간 야외 활동을 피하세요. 창문을 닫아 두세요.",
+      "hazardous": "실내에 머물고 창문을 닫아 두세요. 건강 경보!"
+    }
+  },
+  "ar": {
+    "air_quality": "جودة الهواء",
+    "tomorrow": "غدا",
+    "aqi_label": "مؤشر جودة الهواء",
+    "status": {
+      "good": "جيد",
+      "moderate": "معتدل",
+      "unhealthy_sensitive": "غير صحي للفئات الحساسة",
+      "unhealthy": "غير صحي",
+      "very_unhealthy": "غير صحي جداً",
+      "hazardous": "خطير"
+    },
+    "pollutants": {
+      "pm25": "PM2.5",
+      "pm10": "PM10",
+      "o3": "أوزون",
+      "no2": "NO₂",
+      "so2": "SO₂",
+      "co": "CO"
+    },
+    "health_advice": {
+      "good": "جودة الهواء جيدة. استمتع بالأنشطة الخارجية!",
+      "moderate": "جودة الهواء مقبولة لمعظم الناس.",
+      "unhealthy_sensitive": "يجب على الفئات الحساسة تقليل النشاط الخارجي المطول.",
+      "unhealthy": "يجب على الجميع تقليل النشاط الخارجي المطول.",
+      "very_unhealthy": "تجنب النشاط الخارجي المطول. أغلق النوافذ.",
+      "hazardous": "ابق في الداخل وأغلق النوافذ. تنبيه صحي!"
+    }
+  },
+  "he": {
+    "air_quality": "איכות אוויר",
+    "tomorrow": "מחר",
+    "aqi_label": "מדד איכות אוויר",
+    "status": {
+      "good": "טוב",
+      "moderate": "בינוני",
+      "unhealthy_sensitive": "לא בריא לקבוצות רגישות",
+      "unhealthy": "לא בריא",
+      "very_unhealthy": "לא בריא מאוד",
+      "hazardous": "מסוכן"
+    },
+    "pollutants": {
+      "pm25": "PM2.5",
+      "pm10": "PM10",
+      "o3": "אוזון",
+      "no2": "NO₂",
+      "so2": "SO₂",
+      "co": "CO"
+    },
+    "health_advice": {
+      "good": "איכות האוויר טובה. תהנו מפעילויות בחוץ!",
+      "moderate": "איכות האוויר מקובלת עבור רוב האנשים.",
+      "unhealthy_sensitive": "קבוצות רגישות צריכות להפחית מאמץ ממושך בחוץ.",
+      "unhealthy": "כולם צריכים להפחית מאמץ ממושך בחוץ.",
+      "very_unhealthy": "הימנעו ממאמץ ממושך בחוץ. שמרו על חלונות סגורים.",
+      "hazardous": "הישארו בפנים ושמרו על חלונות סגורים. התראת בריאות!"
+    }
+  },
+  "hi": {
+    "air_quality": "वायु गुणवत्ता",
+    "tomorrow": "कल",
+    "aqi_label": "AQI",
+    "status": {
+      "good": "अच्छा",
+      "moderate": "मध्यम",
+      "unhealthy_sensitive": "संवेदनशील समूहों के लिए अस्वास्थ्यकर",
+      "unhealthy": "अस्वास्थ्यकर",
+      "very_unhealthy": "बहुत अस्वास्थ्यकर",
+      "hazardous": "खतरनाक"
+    },
+    "pollutants": {
+      "pm25": "PM2.5",
+      "pm10": "PM10",
+      "o3": "ओजोन",
+      "no2": "NO₂",
+      "so2": "SO₂",
+      "co": "CO"
+    },
+    "health_advice": {
+      "good": "वायु गुणवत्ता अच्छी है। बाहरी गतिविधियों का आनंद लें!",
+      "moderate": "वायु गुणवत्ता अधिकांश लोगों के लिए स्वीकार्य है।",
+      "unhealthy_sensitive": "संवेदनशील समूहों को लंबे समय तक बाहरी प्रयास कम करना चाहिए।",
+      "unhealthy": "सभी को लंबे समय तक बाहरी प्रयास कम करना चाहिए।",
+      "very_unhealthy": "लंबे समय तक बाहरी प्रयास से बचें। खिड़कियां बंद रखें।",
+      "hazardous": "घर के अंदर रहें और खिड़कियां बंद रखें। स्वास्थ्य चेतावनी!"
+    }
+  },
+  "th": {
+    "air_quality": "คุณภาพอากาศ",
+    "tomorrow": "พรุ่งนี้",
+    "aqi_label": "AQI",
+    "status": {
+      "good": "ดี",
+      "moderate": "ปานกลาง",
+      "unhealthy_sensitive": "ไม่ดีต่อสุขภาพสำหรับกลุ่มเสี่ยง",
+      "unhealthy": "ไม่ดีต่อสุขภาพ",
+      "very_unhealthy": "ไม่ดีต่อสุขภาพมาก",
+      "hazardous": "อันตราย"
+    },
+    "pollutants": {
+      "pm25": "PM2.5",
+      "pm10": "PM10",
+      "o3": "โอโซน",
+      "no2": "NO₂",
+      "so2": "SO₂",
+      "co": "CO"
+    },
+    "health_advice": {
+      "good": "คุณภาพอากาศดี เพลิดเพลินกับกิจกรรมกลางแจ้ง!",
+      "moderate": "คุณภาพอากาศอยู่ในระดับที่ยอมรับได้สำหรับคนส่วนใหญ่",
+      "unhealthy_sensitive": "กลุ่มเสี่ยงควรลดกิจกรรมกลางแจ้งที่ใช้เวลานาน",
+      "unhealthy": "ทุกคนควรลดกิจกรรมกลางแจ้งที่ใช้เวลานาน",
+      "very_unhealthy": "หลีกเลี่ยงกิจกรรมกลางแจ้งที่ใช้เวลานาน ปิดหน้าต่าง",
+      "hazardous": "อยู่ในอาคารและปิดหน้าต่าง คำเตือนด้านสุขภาพ!"
+    }
+  },
+  "vi": {
+    "air_quality": "Chất lượng không khí",
+    "tomorrow": "Ngày mai",
+    "aqi_label": "AQI",
+    "status": {
+      "good": "Tốt",
+      "moderate": "Trung bình",
+      "unhealthy_sensitive": "Không lành mạnh cho nhóm nhạy cảm",
+      "unhealthy": "Không lành mạnh",
+      "very_unhealthy": "Rất không lành mạnh",
+      "hazardous": "Nguy hiểm"
+    },
+    "pollutants": {
+      "pm25": "PM2.5",
+      "pm10": "PM10",
+      "o3": "Ozone",
+      "no2": "NO₂",
+      "so2": "SO₂",
+      "co": "CO"
+    },
+    "health_advice": {
+      "good": "Chất lượng không khí tốt. Tận hưởng các hoạt động ngoài trời!",
+      "moderate": "Chất lượng không khí chấp nhận được đối với hầu hết mọi người.",
+      "unhealthy_sensitive": "Nhóm nhạy cảm nên giảm hoạt động ngoài trời kéo dài.",
+      "unhealthy": "Mọi người nên giảm hoạt động ngoài trời kéo dài.",
+      "very_unhealthy": "Tránh hoạt động ngoài trời kéo dài. Đóng cửa sổ.",
+      "hazardous": "Ở trong nhà và đóng cửa sổ. Cảnh báo sức khỏe!"
+    }
+  },
+  "id": {
+    "air_quality": "Kualitas udara",
+    "tomorrow": "Besok",
+    "aqi_label": "IKU",
+    "status": {
+      "good": "Baik",
+      "moderate": "Sedang",
+      "unhealthy_sensitive": "Tidak sehat untuk kelompok sensitif",
+      "unhealthy": "Tidak sehat",
+      "very_unhealthy": "Sangat tidak sehat",
+      "hazardous": "Berbahaya"
+    },
+    "pollutants": {
+      "pm25": "PM2.5",
+      "pm10": "PM10",
+      "o3": "Ozon",
+      "no2": "NO₂",
+      "so2": "SO₂",
+      "co": "CO"
+    },
+    "health_advice": {
+      "good": "Kualitas udara baik. Nikmati aktivitas luar ruangan!",
+      "moderate": "Kualitas udara dapat diterima untuk sebagian besar orang.",
+      "unhealthy_sensitive": "Kelompok sensitif harus mengurangi aktivitas luar ruangan yang berkepanjangan.",
+      "unhealthy": "Semua orang harus mengurangi aktivitas luar ruangan yang berkepanjangan.",
+      "very_unhealthy": "Hindari aktivitas luar ruangan yang berkepanjangan. Tutup jendela.",
+      "hazardous": "Tetap di dalam ruangan dan tutup jendela. Peringatan kesehatan!"
+    }
   }
 }
