@@ -6,8 +6,8 @@
 
   .aqi-info {
     position: absolute;
-    top: 10px;
-    left: 10px;
+    top: 5px;
+    left: 5px;
     border: 2px solid black;
     border-radius: 8px;
     z-index: 100;
@@ -28,8 +28,8 @@
   <span class="title">{% if t %}{{ t.air_quality | default: "Air Quality" }}{% else %}Air Quality{% endif %}</span>
 </div>
 {% else %}
-<div class="layout layout--stretch m--0 p--0">
-  <svg class="image image-dither image--fill w--full h--full" viewBox="0 0 768 768" preserveAspectRatio="xMidYMid slice">
+<div class="layout layout--stretch">
+  <svg class="image image-dither image--fill w--full h--full rounded" viewBox="0 0 768 768" preserveAspectRatio="xMidYMid slice">
     <g id="map-layers"></g>
     <g id="stations"></g>
     <g id="location-marker"></g>
@@ -47,7 +47,7 @@
     <div class="label label--inverted">{{ aqi_response.status | upcase }}</div>
     {% unless compact %}
     <div class="flex flex--row gap--xsmall">
-      <span class="material-symbols-outlined pollutant-icon" id="pollutant-icon"></span>
+      <span class="material-symbols-outlined" id="pollutant-icon"></span>
       {% if aqi_response.pm25 %}
       <div class="description">{{ aqi_response.pollutant_name }} ({{ aqi_response.pm25 }} µg/m³)</div>
       {% else %}
@@ -65,7 +65,9 @@
 </div>
 
 <div class="title_bar">
-  <span class="title">{{ aqi_response.health_advice | default: t.air_quality }}</span>
+        <span class="material-symbols-outlined">air</span>
+
+  <span class="title">{{ aqi_response.health_advice: default:t.air_quality | default: "Air Quality" }}</span>
   <span class="instance">{{ aqi_response.city }}</span>
 </div>
 <script>
