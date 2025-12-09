@@ -26,7 +26,9 @@
       "unhealthy": "Everyone should reduce prolonged outdoor exertion.",
       "very_unhealthy": "Avoid prolonged outdoor exertion. Keep windows closed.",
       "hazardous": "Stay indoors and keep windows closed. Health alert!"
-    }
+    },
+    "no_data": "No data available",
+    "error": "Error loading data"
   },
   "fr": {
     "air_quality": "Qualité de l'air",
@@ -55,7 +57,9 @@
       "unhealthy": "Tout le monde devrait réduire les efforts prolongés en plein air.",
       "very_unhealthy": "Évitez les efforts prolongés en plein air. Gardez les fenêtres fermées.",
       "hazardous": "Restez à l'intérieur et gardez les fenêtres fermées. Alerte santé !"
-    }
+    },
+    "no_data": "Aucune donnée disponible",
+    "error": "Erreur de chargement des données"
   },
   "nl": {
     "air_quality": "Luchtkwaliteit",
@@ -84,7 +88,9 @@
       "unhealthy": "Iedereen moet langdurige inspanningen buitenshuis verminderen.",
       "very_unhealthy": "Vermijd langdurige inspanningen buitenshuis. Houd ramen gesloten.",
       "hazardous": "Blijf binnen en houd ramen gesloten. Gezondheidsalert!"
-    }
+    },
+    "no_data": "Geen gegevens beschikbaar",
+    "error": "Fout bij laden van gegevens"
   },
   "de": {
     "air_quality": "Luftqualität",
@@ -113,7 +119,9 @@
       "unhealthy": "Jeder sollte längere Anstrengungen im Freien reduzieren.",
       "very_unhealthy": "Vermeiden Sie längere Anstrengungen im Freien. Fenster geschlossen halten.",
       "hazardous": "Bleiben Sie drinnen und halten Sie die Fenster geschlossen. Gesundheitsalarm!"
-    }
+    },
+    "no_data": "Keine Daten verfügbar",
+    "error": "Fehler beim Laden der Daten"
   },
   "es": {
     "air_quality": "Calidad del aire",
@@ -142,7 +150,9 @@
       "unhealthy": "Todos deben reducir el esfuerzo prolongado al aire libre.",
       "very_unhealthy": "Evite el esfuerzo prolongado al aire libre. Mantenga las ventanas cerradas.",
       "hazardous": "¡Permanezca en el interior y mantenga las ventanas cerradas. Alerta de salud!"
-    }
+    },
+    "no_data": "No hay datos disponibles",
+    "error": "Error al cargar datos"
   },
   "it": {
     "air_quality": "Qualità dell'aria",
@@ -171,7 +181,9 @@
       "unhealthy": "Tutti dovrebbero ridurre lo sforzo prolungato all'aperto.",
       "very_unhealthy": "Evitare lo sforzo prolungato all'aperto. Tenere le finestre chiuse.",
       "hazardous": "Rimanere al chiuso e tenere le finestre chiuse. Allarme sanitario!"
-    }
+    },
+    "no_data": "Nessun dato disponibile",
+    "error": "Errore nel caricamento dei dati"
   },
   "pt": {
     "air_quality": "Qualidade do ar",
@@ -200,7 +212,9 @@
       "unhealthy": "Todos devem reduzir esforços prolongados ao ar livre.",
       "very_unhealthy": "Evite esforços prolongados ao ar livre. Mantenha janelas fechadas.",
       "hazardous": "Fique em ambientes fechados e mantenha janelas fechadas. Alerta de saúde!"
-    }
+    },
+    "no_data": "Nenhum dado disponível",
+    "error": "Erro ao carregar dados"
   },
   "pl": {
     "air_quality": "Jakość powietrza",
@@ -229,7 +243,9 @@
       "unhealthy": "Wszyscy powinni ograniczyć przedłużony wysiłek na świeżym powietrzu.",
       "very_unhealthy": "Unikaj przedłużonego wysiłku na świeżym powietrzu. Trzymaj okna zamknięte.",
       "hazardous": "Pozostań w pomieszczeniach i trzymaj okna zamknięte. Alert zdrowotny!"
-    }
+    },
+    "no_data": "Brak dostępnych danych",
+    "error": "Błąd ładowania danych"
   },
   "sv": {
     "air_quality": "Luftkvalitet",
@@ -258,7 +274,9 @@
       "unhealthy": "Alla bör minska långvarig utomhusansträngning.",
       "very_unhealthy": "Undvik långvarig utomhusansträngning. Håll fönstren stängda.",
       "hazardous": "Stanna inomhus och håll fönstren stängda. Hälsovarning!"
-    }
+    },
+    "no_data": "Ingen data tillgänglig",
+    "error": "Fel vid laddning av data"
   },
   "da": {
     "air_quality": "Luftkvalitet",
@@ -287,7 +305,9 @@
       "unhealthy": "Alle bør reducere langvarig udendørs anstrengelse.",
       "very_unhealthy": "Undgå langvarig udendørs anstrengelse. Hold vinduerne lukkede.",
       "hazardous": "Bliv indendørs og hold vinduerne lukkede. Sundhedsalarm!"
-    }
+    },
+    "no_data": "Ingen data tilgængelig",
+    "error": "Fejl ved indlæsning af data"
   },
   "no": {
     "air_quality": "Luftkvalitet",
@@ -316,7 +336,9 @@
       "unhealthy": "Alle bør redusere langvarig utendørs anstrengelse.",
       "very_unhealthy": "Unngå langvarig utendørs anstrengelse. Hold vinduene lukket.",
       "hazardous": "Bli innendørs og hold vinduene lukket. Helsevarsel!"
-    }
+    },
+    "no_data": "Ingen data tilgjengelig",
+    "error": "Feil ved lasting av data"
   },
   "fi": {
     "air_quality": "Ilmanlaatu",
@@ -345,7 +367,9 @@
       "unhealthy": "Kaikkien tulisi vähentää pitkäaikaista ulkoilmassa rasitusta.",
       "very_unhealthy": "Vältä pitkäaikaista ulkoilmassa rasitusta. Pidä ikkunat kiinni.",
       "hazardous": "Pysy sisällä ja pidä ikkunat kiinni. Terveyshälytys!"
-    }
+    },
+    "no_data": "Ei saatavilla olevia tietoja",
+    "error": "Virhe tietojen lataamisessa"
   },
   "cs": {
     "air_quality": "Kvalita ovzduší",
@@ -374,7 +398,9 @@
       "unhealthy": "Každý by měl omezit dlouhodobou venkovní námahu.",
       "very_unhealthy": "Vyhněte se dlouhodobé venkovní námaze. Udržujte okna zavřená.",
       "hazardous": "Zůstaňte uvnitř a udržujte okna zavřená. Zdravotní výstraha!"
-    }
+    },
+    "no_data": "Žádná dostupná data",
+    "error": "Chyba při načítání dat"
   },
   "hu": {
     "air_quality": "Levegőminőség",
@@ -403,7 +429,9 @@
       "unhealthy": "Mindenkinek csökkentenie kell a hosszan tartó szabadtéri erőfeszítést.",
       "very_unhealthy": "Kerülje a hosszan tartó szabadtéri erőfeszítést. Tartsa zárva az ablakokat.",
       "hazardous": "Maradjon bent és tartsa zárva az ablakokat. Egészségügyi riasztás!"
-    }
+    },
+    "no_data": "Nincs elérhető adat",
+    "error": "Hiba az adatok betöltése során"
   },
   "ro": {
     "air_quality": "Calitatea aerului",
@@ -432,7 +460,9 @@
       "unhealthy": "Toată lumea ar trebui să reducă efortul prelungit în aer liber.",
       "very_unhealthy": "Evitați efortul prelungit în aer liber. Țineți ferestrele închise.",
       "hazardous": "Rămâneți în interior și țineți ferestrele închise. Alertă de sănătate!"
-    }
+    },
+    "no_data": "Nu există date disponibile",
+    "error": "Eroare la încărcarea datelor"
   },
   "tr": {
     "air_quality": "Hava kalitesi",
@@ -461,7 +491,9 @@
       "unhealthy": "Herkes uzun süreli açık hava egzersizini azaltmalıdır.",
       "very_unhealthy": "Uzun süreli açık hava egzersizinden kaçının. Pencereleri kapalı tutun.",
       "hazardous": "İçeride kalın ve pencereleri kapalı tutun. Sağlık alarmı!"
-    }
+    },
+    "no_data": "Veri mevcut değil",
+    "error": "Veri yükleme hatası"
   },
   "el": {
     "air_quality": "Ποιότητα αέρα",
@@ -490,7 +522,9 @@
       "unhealthy": "Όλοι πρέπει να μειώσουν την παρατεταμένη υπαίθρια προσπάθεια.",
       "very_unhealthy": "Αποφύγετε την παρατεταμένη υπαίθρια προσπάθεια. Κρατήστε τα παράθυρα κλειστά.",
       "hazardous": "Μείνετε σε εσωτερικούς χώρους και κρατήστε τα παράθυρα κλειστά. Συναγερμός υγείας!"
-    }
+    },
+    "no_data": "Δεν υπάρχουν διαθέσιμα δεδομένα",
+    "error": "Σφάλμα φόρτωσης δεδομένων"
   },
   "ru": {
     "air_quality": "Качество воздуха",
@@ -519,7 +553,9 @@
       "unhealthy": "Всем следует сократить длительное пребывание на открытом воздухе.",
       "very_unhealthy": "Избегайте длительного пребывания на открытом воздухе. Держите окна закрытыми.",
       "hazardous": "Оставайтесь в помещении и держите окна закрытыми. Угроза здоровью!"
-    }
+    },
+    "no_data": "Нет доступных данных",
+    "error": "Ошибка загрузки данных"
   },
   "uk": {
     "air_quality": "Якість повітря",
@@ -548,7 +584,9 @@
       "unhealthy": "Всім слід скоротити тривале перебування на відкритому повітрі.",
       "very_unhealthy": "Уникайте тривалого перебування на відкритому повітрі. Тримайте вікна зачиненими.",
       "hazardous": "Залишайтеся в приміщенні та тримайте вікна зачиненими. Загроза здоров'ю!"
-    }
+    },
+    "no_data": "Немає доступних даних",
+    "error": "Помилка завантаження даних"
   },
   "ja": {
     "air_quality": "空気質",
@@ -577,7 +615,9 @@
       "unhealthy": "誰もが長時間の屋外活動を減らすべきです。",
       "very_unhealthy": "長時間の屋外活動を避けてください。窓を閉めてください。",
       "hazardous": "屋内にいて、窓を閉めてください。健康警報！"
-    }
+    },
+    "no_data": "データがありません",
+    "error": "データの読み込みエラー"
   },
   "zh": {
     "air_quality": "空气质量",
@@ -606,7 +646,9 @@
       "unhealthy": "每个人都应减少长时间户外活动。",
       "very_unhealthy": "避免长时间户外活动。保持窗户关闭。",
       "hazardous": "待在室内并保持窗户关闭。健康警报！"
-    }
+    },
+    "no_data": "无可用数据",
+    "error": "加载数据错误"
   },
   "ko": {
     "air_quality": "대기질",
@@ -635,7 +677,9 @@
       "unhealthy": "모두가 장시간 야외 활동을 줄여야 합니다.",
       "very_unhealthy": "장시간 야외 활동을 피하세요. 창문을 닫아 두세요.",
       "hazardous": "실내에 머물고 창문을 닫아 두세요. 건강 경보!"
-    }
+    },
+    "no_data": "사용 가능한 데이터가 없습니다",
+    "error": "데이터 로딩 오류"
   },
   "ar": {
     "air_quality": "جودة الهواء",
@@ -664,7 +708,9 @@
       "unhealthy": "يجب على الجميع تقليل النشاط الخارجي المطول.",
       "very_unhealthy": "تجنب النشاط الخارجي المطول. أغلق النوافذ.",
       "hazardous": "ابق في الداخل وأغلق النوافذ. تنبيه صحي!"
-    }
+    },
+    "no_data": "لا توجد بيانات متاحة",
+    "error": "خطأ في تحميل البيانات"
   },
   "he": {
     "air_quality": "איכות אוויר",
@@ -693,7 +739,9 @@
       "unhealthy": "כולם צריכים להפחית מאמץ ממושך בחוץ.",
       "very_unhealthy": "הימנעו ממאמץ ממושך בחוץ. שמרו על חלונות סגורים.",
       "hazardous": "הישארו בפנים ושמרו על חלונות סגורים. התראת בריאות!"
-    }
+    },
+    "no_data": "אין נתונים זמינים",
+    "error": "שגיאה בטעינת נתונים"
   },
   "hi": {
     "air_quality": "वायु गुणवत्ता",
@@ -722,7 +770,9 @@
       "unhealthy": "सभी को लंबे समय तक बाहरी प्रयास कम करना चाहिए।",
       "very_unhealthy": "लंबे समय तक बाहरी प्रयास से बचें। खिड़कियां बंद रखें।",
       "hazardous": "घर के अंदर रहें और खिड़कियां बंद रखें। स्वास्थ्य चेतावनी!"
-    }
+    },
+    "no_data": "कोई डेटा उपलब्ध नहीं",
+    "error": "डेटा लोड करने में त्रुटि"
   },
   "th": {
     "air_quality": "คุณภาพอากาศ",
@@ -751,7 +801,9 @@
       "unhealthy": "ทุกคนควรลดกิจกรรมกลางแจ้งที่ใช้เวลานาน",
       "very_unhealthy": "หลีกเลี่ยงกิจกรรมกลางแจ้งที่ใช้เวลานาน ปิดหน้าต่าง",
       "hazardous": "อยู่ในอาคารและปิดหน้าต่าง คำเตือนด้านสุขภาพ!"
-    }
+    },
+    "no_data": "ไม่มีข้อมูล",
+    "error": "เกิดข้อผิดพลาดในการโหลดข้อมูล"
   },
   "vi": {
     "air_quality": "Chất lượng không khí",
@@ -780,7 +832,9 @@
       "unhealthy": "Mọi người nên giảm hoạt động ngoài trời kéo dài.",
       "very_unhealthy": "Tránh hoạt động ngoài trời kéo dài. Đóng cửa sổ.",
       "hazardous": "Ở trong nhà và đóng cửa sổ. Cảnh báo sức khỏe!"
-    }
+    },
+    "no_data": "Không có dữ liệu",
+    "error": "Lỗi tải dữ liệu"
   },
   "id": {
     "air_quality": "Kualitas udara",
@@ -809,6 +863,8 @@
       "unhealthy": "Semua orang harus mengurangi aktivitas luar ruangan yang berkepanjangan.",
       "very_unhealthy": "Hindari aktivitas luar ruangan yang berkepanjangan. Tutup jendela.",
       "hazardous": "Tetap di dalam ruangan dan tutup jendela. Peringatan kesehatan!"
-    }
+    },
+    "no_data": "Tidak ada data tersedia",
+    "error": "Kesalahan memuat data"
   }
 }
