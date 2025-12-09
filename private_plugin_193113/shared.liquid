@@ -1,18 +1,41 @@
 {% assign aqi_response = data %}
 
 <style>
+  @import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200');
   
   .aqi-info {
     position: absolute;
-    top: 5px;
-    left: 5px;
+    top: 10px;
+    left: 10px;
     background: white;
     border: 2px solid black;
     border-radius: 8px;
     z-index: 1000;
   }
   
+  .pollutant-icon {
+    opacity: 0.8;
+    font-size: 1.2rem !important;
+  }
+  
+  .gauge-container {
+    width: 100%;
+    height: 100%;
+    position: relative;
+  }
+  
+  .aqi-label-bottom {
+    text-align: center;
+    font-weight: bold;
+    margin-top: -10px;
+  }
 </style>
+
+<!-- import Highcharts libraries -->
+<script src="https://usetrmnl.com/js/highcharts/12.3.0/highcharts.js"></script>
+<script src="https://usetrmnl.com/js/highcharts/12.3.0/highcharts-more.js"></script>
+<script src="https://usetrmnl.com/js/highcharts/12.3.0/pattern-fill.js"></script>
+
 {% template main %}
 <div class="layout layout--stretch m--0 p--0">
   <svg class="image image--fill" viewBox="0 0 768 768" preserveAspectRatio="xMidYMid slice" style="width: 100%; height: 100%;">
@@ -21,25 +44,40 @@
     <g id="location-marker"></g>
   </svg>
   
-  <div class="aqi-info flex flex--col {% unless compact %} flex--left{% endunless%} gap--xsmall p--{% if compact %}2{%else%}4{%endif%}">
-    <div class="flex flex--row">
-    <span class="value {% unless compact %}value--xxlarge{% else %}value--large{% endunless%}" id="aqi-number">{{ aqi_response.aqi }}</span>
-    {% unless compact %}<span class="label">AGI</span>{% endunless %}
+  <div class="aqi-info flex flex--col gap--xsmall p--{% if compact %}2{%else%}4{%endif%}">
+    <div class="flex flex--row gap--small align-items--center">
+      <div class="flex flex--col m--0 p--0 gap--none" style="min-width: {% if compact %}70px{% else %}140px{% endif %}; padding-left: {% if compact %}0{% else %}8px{% endif %}; position: relative;">
+        <div id="aqi-gauge" class="gauge-container"></div>
+        <div class="aqi-label-bottom">
+          <span class="value {% if compact %}value--medium{% else %}value--xxlarge{% endif %}" id="aqi-number">{{ aqi_response.aqi }}</span>
+          <span class="label">AQI</span>
+        </div>
+      </div>
     </div>
     <div class="label label--inverted">{{ aqi_response.status | upcase }}</div>
-        {% unless compact %}
-
-    <div class="label">{{ aqi_response.city }}</div>
-    {% if aqi_response.pm25 %}
-    <div class="description">PM2.5: {{ aqi_response.pm25 }}</div>
+    {% unless compact %}
+    <div class="flex flex--row align-items--center gap--xsmall">
+      <span class="material-symbols-outlined pollutant-icon" id="pollutant-icon"></span>
+      {% if aqi_response.pm25 %}
+      <div class="description">{{ aqi_response.pollutant_name }} ({{ aqi_response.pm25 }} µg/m³)</div>
+      {% else %}
+      <div class="description">{{ aqi_response.pollutant_name }}</div>
+      {% endif %}
+    </div>
+    {% if aqi_response.aqi > 100 %}
+    <div class="description" style="font-style: italic; font-size: 0.9em;">{{ aqi_response.health_advice }}</div>
     {% endif %}
-    <div class="description" id="station-count"></div>
+    {% if aqi_response.forecast %}
+    <div class="description" style="margin-top: 4px;">
+      <strong>Tomorrow:</strong> AQI {{ aqi_response.forecast.aqi }}
+    </div>
+    {% endif %}
     {% endunless %}
   </div>
 </div>
 
 <div class="title_bar">
-  <span class="title">Air Quality {% if compact %}<span class="label">(in AQI){% endif %}</span></span>
+  <span class="title">Air Quality</span>
   <span class="instance">{{ aqi_response.city }}</span>
 </div>
 
@@ -47,14 +85,24 @@
 const data = {{ aqi_response | json }};
 
 const config = {
-  viewWidth: 768,  // 3x3 tiles = 768px
-  viewHeight: 768, // 3x3 tiles = 768px
+  viewWidth: 768,
+  viewHeight: 768,
   tileSize: 256,
   zoom: data.zoom,
   centerTile: { x: data.tile_x, y: data.tile_y },
   centerLat: data.lat,
   centerLon: data.lon
 };
+
+// AQI level definitions
+const AQI_LEVELS = [
+  { min: 0, max: 50, name: 'Good' },
+  { min: 51, max: 100, name: 'Moderate' },
+  { min: 101, max: 150, name: 'Unhealthy for Sensitive' },
+  { min: 151, max: 200, name: 'Unhealthy' },
+  { min: 201, max: 300, name: 'Very Unhealthy' },
+  { min: 301, max: 500, name: 'Hazardous' }
+];
 
 // Mercator projection
 function latLonToTile(lat, lon, zoom) {
@@ -72,35 +120,287 @@ function latLonToPixels(lat, lon) {
   const tileOffsetX = tile.x - leftTile;
   const tileOffsetY = tile.y - topTile;
   
-  // Convert directly to pixels - no offsets needed since viewBox = tiles
   const px = tileOffsetX * config.tileSize;
   const py = tileOffsetY * config.tileSize;
   
   return { x: px, y: py };
 }
 
-// Optimized for e-ink grayscale
+// Display mode: 'bw' for 1-bit black & white, 'gray-4' for 2-bit (4 grays)
+const DISPLAY_MODE = 'gray-4'; // Change to 'bw' for black & white
+
+// Color palette for map dots based on display mode
 function getAQIColor(aqi) {
-  if (aqi <= 50) return '#ffffff';      // Good: White
-  if (aqi <= 100) return '#d0d0d0';     // Moderate: Light gray
-  if (aqi <= 150) return '#a0a0a0';     // Unhealthy for Sensitive: Medium gray
-  if (aqi <= 200) return '#707070';     // Unhealthy: Dark gray
-  if (aqi <= 300) return '#404040';     // Very Unhealthy: Very dark gray
-  return '#000000';                      // Hazardous: Black
+  if (DISPLAY_MODE === 'bw') {
+    // 1-bit: Black & White only
+    if (aqi <= 100) return '#ffffff'; // Good/Moderate = White
+    return '#000000'; // Unhealthy+ = Black
+  } else {
+    // 2-bit: 4 grays (#ffffff, #aaaaaa, #555555, #000000)
+    if (aqi <= 50) return '#ffffff';      // Good: White
+    if (aqi <= 100) return '#aaaaaa';     // Moderate: Light gray
+    if (aqi <= 150) return '#555555';     // Unhealthy for Sensitive: Dark gray
+    return '#000000';                     // Unhealthy+: Black
+  }
 }
 
 function getStrokeColor(aqi) {
-  // Good/Moderate: black stroke on light fill
-  if (aqi <= 100) return '#000000';
-  // Unhealthy+: white stroke on dark fill
-  return '#ffffff';
+  return '#000000';
 }
 
 function getTextColor(aqi) {
-  // Light backgrounds: black text
-  if (aqi <= 150) return '#000000';
-  // Dark backgrounds: white text
-  return '#ffffff';
+  if (DISPLAY_MODE === 'bw') {
+    // 1-bit: Inverse of fill
+    if (aqi <= 100) return '#000000'; // White bg = Black text
+    return '#ffffff'; // Black bg = White text
+  } else {
+    // 2-bit: Black on light colors, white on dark
+    if (aqi <= 100) return '#000000';
+    return '#ffffff';
+  }
+}
+
+// Pollutant icon
+function getPollutantIcon(pollutant) {
+  const icons = {
+    'pm25': 'blur_on',
+    'pm10': 'blur_on',
+    'o3': 'wb_sunny',
+    'no2': 'local_shipping',
+    'co': 'directions_car',
+    'so2': 'factory'
+  };
+  return icons[pollutant] || 'monitoring';
+}
+
+// Pattern for gauge based on display mode
+function getPatternForAQI(aqi) {
+  if (DISPLAY_MODE === 'bw') {
+    // 1-bit: Only black and white patterns (lighter = better)
+    const patterns = [
+      { max: 50, image: 'https://usetrmnl.com/images/grayscale/gray-6.png' },  // Good: White
+      { max: 100, image: 'https://usetrmnl.com/images/grayscale/gray-6.png' }, // Moderate: White
+      { max: 150, image: 'https://usetrmnl.com/images/grayscale/gray-1.png' }, // Unhealthy Sens: Black
+      { max: 200, image: 'https://usetrmnl.com/images/grayscale/gray-1.png' }, // Unhealthy: Black
+      { max: 300, image: 'https://usetrmnl.com/images/grayscale/gray-1.png' }, // Very Unhealthy: Black
+      { max: 500, image: 'https://usetrmnl.com/images/grayscale/gray-1.png' }  // Hazardous: Black
+    ];
+    
+    for (const pattern of patterns) {
+      if (aqi <= pattern.max) {
+        return pattern.image;
+      }
+    }
+    return 'https://usetrmnl.com/images/grayscale/gray-1.png';
+  } else {
+    // 2-bit: 4 grays (lighter = better)
+    const patterns = [
+      { max: 50, image: 'https://usetrmnl.com/images/grayscale/gray-6.png' },  // Good: White
+      { max: 100, image: 'https://usetrmnl.com/images/grayscale/gray-5.png' }, // Moderate: Light gray
+      { max: 150, image: 'https://usetrmnl.com/images/grayscale/gray-2.png' }, // Unhealthy Sens: Dark gray
+      { max: 200, image: 'https://usetrmnl.com/images/grayscale/gray-1.png' }, // Unhealthy: Black
+      { max: 300, image: 'https://usetrmnl.com/images/grayscale/gray-1.png' }, // Very Unhealthy: Black
+      { max: 500, image: 'https://usetrmnl.com/images/grayscale/gray-1.png' }  // Hazardous: Black
+    ];
+    
+    for (const pattern of patterns) {
+      if (aqi <= pattern.max) {
+        return pattern.image;
+      }
+    }
+    return 'https://usetrmnl.com/images/grayscale/gray-1.png';
+  }
+}
+
+// Create AQI gauge - NO INTERNAL LABEL
+function createAQIGauge(aqi) {
+  const isCompact = {% if compact %}true{% else %}false{% endif %};
+  
+  const gaugeSize = isCompact ? '75%' : '100%'; // Further reduced to prevent cutoff
+  const dialWidth = isCompact ? 3 : 6;
+  const pivotRadius = isCompact ? 2 : 5;
+  const marginTop = isCompact ? 3 : 15;
+  const marginBottom = isCompact ? 3 : 15;
+  const paneCenterY = isCompact ? '50%' : '50%';
+  const innerRadius = isCompact ? '85%' : '80%';
+  
+  // Dynamic max based on AQI value for better visibility
+  // Minimum scale is 200, increases if AQI reaches the max
+  let maxValue, tickPositions;
+  if (aqi <= 50) {
+    maxValue = 200;
+    tickPositions = [0, 50, 100, 150, 200];
+  } else if (aqi <= 100) {
+    maxValue = 200;
+    tickPositions = [0, 50, 100, 150, 200];
+  } else if (aqi <= 150) {
+    maxValue = 200;
+    tickPositions = [0, 50, 100, 150, 200];
+  } else if (aqi < 200) {
+    maxValue = 200;
+    tickPositions = [0, 50, 100, 150, 200];
+  } else if (aqi === 200) {
+    maxValue = 300;
+    tickPositions = [0, 100, 150, 200, 300];
+  } else if (aqi < 300) {
+    maxValue = 300;
+    tickPositions = [0, 100, 150, 200, 300];
+  } else if (aqi === 300) {
+    maxValue = 500;
+    tickPositions = [0, 150, 200, 300, 500];
+  } else {
+    maxValue = 500;
+    tickPositions = [0, 150, 200, 300, 500];
+  }
+  
+  // Create plot bands only for visible range
+  const plotBands = AQI_LEVELS
+    .filter(level => level.min < maxValue)
+    .map(level => {
+      let color;
+      
+      if (DISPLAY_MODE === 'bw') {
+        // 1-bit: Use pattern images
+        color = {
+          pattern: {
+            image: getPatternForAQI(level.max),
+            width: 12,
+            height: 12
+          }
+        };
+      } else {
+        // 2-bit: Use solid colors except white (use pattern for white)
+        if (level.max <= 50) {
+          // Good: White - use pattern for visibility
+          color = {
+            pattern: {
+              image: 'https://usetrmnl.com/images/grayscale/gray-6.png',
+              width: 12,
+              height: 12
+            }
+          };
+        } else if (level.max <= 100) {
+          color = '#aaaaaa';  // Moderate: Light gray
+        } else if (level.max <= 150) {
+          color = '#555555';  // Unhealthy for Sensitive: Dark gray
+        } else {
+          color = '#000000';  // Unhealthy+: Black
+        }
+      }
+      
+      return {
+        from: level.min,
+        to: Math.min(level.max, maxValue),
+        color: color,
+        innerRadius: innerRadius,
+        borderRadius: '50%'
+      };
+    });
+  
+  Highcharts.chart('aqi-gauge', {
+    chart: {
+      type: "gauge",
+      height: "100%",
+      animation: false,
+      backgroundColor: 'transparent',
+      margin: [marginTop, 0, marginBottom, 0],
+      spacing: [0, 0, 0, 0]
+    },
+    title: {
+      text: null
+    },
+    pane: {
+      startAngle: -150,
+      endAngle: 150,
+      background: {
+        backgroundColor: "transparent",
+        borderWidth: 0
+      },
+      center: ['50%', paneCenterY],
+      size: isCompact ? gaugeSize : '85%' // Smaller so labels fit in viewport
+    },
+    plotOptions: {
+      gauge: {
+        animation: false,
+        pivot: {
+          backgroundColor: "#000000",
+          borderWidth: 0,
+          radius: pivotRadius
+        },
+        dial: {
+          backgroundColor: "#000000",
+          baseWidth: dialWidth,
+          rearLength: '0%',
+          radius: '100%',
+          topWidth: 1
+        },
+        dataLabels: {
+          enabled: false
+        }
+      }
+    },
+    yAxis: {
+      min: 0,
+      max: maxValue,
+      minorTickInterval: 0,
+      tickInterval: 50,
+      tickPositions: tickPositions,
+      tickColor: "transparent", // Hide tick marks
+      tickLength: isCompact ? 0 : 8,
+      tickWidth: isCompact ? 0 : 1,
+      lineWidth: 0,
+      labels: {
+        enabled: !isCompact,
+        distance: 10,
+        style: {
+          fontSize: '11px',
+          fontWeight: 'bold',
+          color: '#000000'
+        },
+        formatter: function() {
+          return this.value;
+        }
+      },
+      title: {
+        text: ""
+      },
+      plotBands: plotBands
+    },
+    series: [{
+      name: "AQI",
+      data: [aqi],
+      dataLabels: {
+        enabled: false
+      },
+      dial: {
+        radius: '100%',
+        backgroundColor: '#000000',
+        baseWidth: dialWidth,
+        rearLength: '0%',
+        topWidth: 1
+      },
+      pivot: {
+        radius: pivotRadius,
+        backgroundColor: '#000000'
+      }
+    }],
+    tooltip: {
+      enabled: false
+    },
+    credits: {
+      enabled: false
+    }
+  });
+}
+
+function setIcons() {
+  if (!{% if compact %}true{% else %}false{% endif %}) {
+    const pollutantIcon = getPollutantIcon(data.dominentpol);
+    const pollutantIconElement = document.getElementById('pollutant-icon');
+    if (pollutantIconElement) {
+      pollutantIconElement.textContent = pollutantIcon;
+    }
+  }
 }
 
 function renderMapTiles() {
@@ -108,33 +408,43 @@ function renderMapTiles() {
   const centerX = config.centerTile.x;
   const centerY = config.centerTile.y;
   
-  // Render 3x3 grid - tiles positioned directly at 0,0
   for (let dy = -1; dy <= 1; dy++) {
     for (let dx = -1; dx <= 1; dx++) {
       const tx = centerX + dx;
       const ty = centerY + dy;
-      const x = (dx + 1) * config.tileSize;
-      const y = (dy + 1) * config.tileSize;
       
-      // Base map
-      const baseImg = document.createElementNS('http://www.w3.org/2000/svg', 'image');
-      baseImg.setAttributeNS('http://www.w3.org/1999/xlink', 'href',
+      // Calculate exact integer positions
+      const x = Math.round((dx + 1) * config.tileSize);
+      const y = Math.round((dy + 1) * config.tileSize);
+      
+      // Create rectangle at exact integer boundaries
+      const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+      rect.setAttribute('x', x);
+      rect.setAttribute('y', y);
+      rect.setAttribute('width', config.tileSize);
+      rect.setAttribute('height', config.tileSize);
+      rect.setAttribute('fill', 'url(#tile_' + tx + '_' + ty + ')');
+      rect.setAttribute('shape-rendering', 'crispEdges');
+      mapLayers.appendChild(rect);
+      
+      // Create pattern definition
+      const pattern = document.createElementNS('http://www.w3.org/2000/svg', 'pattern');
+      pattern.setAttribute('id', 'tile_' + tx + '_' + ty);
+      pattern.setAttribute('patternUnits', 'userSpaceOnUse');
+      pattern.setAttribute('x', x);
+      pattern.setAttribute('y', y);
+      pattern.setAttribute('width', config.tileSize);
+      pattern.setAttribute('height', config.tileSize);
+      
+      const image = document.createElementNS('http://www.w3.org/2000/svg', 'image');
+      image.setAttributeNS('http://www.w3.org/1999/xlink', 'href',
         `https://tile.openstreetmap.org/${config.zoom}/${tx}/${ty}.png`);
-      baseImg.setAttribute('x', x);
-      baseImg.setAttribute('y', y);
-      baseImg.setAttribute('width', config.tileSize);
-      baseImg.setAttribute('height', config.tileSize);
-      mapLayers.appendChild(baseImg);
+      image.setAttribute('width', config.tileSize);
+      image.setAttribute('height', config.tileSize);
+      image.setAttribute('preserveAspectRatio', 'none');
       
-      // AQI overlay
-      const aqiImg = document.createElementNS('http://www.w3.org/2000/svg', 'image');
-      aqiImg.setAttributeNS('http://www.w3.org/1999/xlink', 'href',
-        `https://trmnl.bettens.dev/air-pollution/tiles/aqi/${config.zoom}/${tx}/${ty}.png`);
-      aqiImg.setAttribute('x', x);
-      aqiImg.setAttribute('y', y);
-      aqiImg.setAttribute('width', config.tileSize);
-      aqiImg.setAttribute('height', config.tileSize);
-      mapLayers.appendChild(aqiImg);
+      pattern.appendChild(image);
+      mapLayers.appendChild(pattern);
     }
   }
 }
@@ -142,17 +452,10 @@ function renderMapTiles() {
 function renderStations() {
   const stationsGroup = document.getElementById('stations');
   const stations = data.stations || [];
-  let visibleCount = 0;
   
   stations.forEach(station => {
-    // Skip stations with no AQI data
-    if (station.aqi === '-' || station.aqi === null) {
-      return;
-    }
-    
     const pos = latLonToPixels(station.lat, station.lon);
     
-    // Only render if within view bounds
     if (pos.x >= -20 && pos.x <= config.viewWidth + 20 && 
         pos.y >= -20 && pos.y <= config.viewHeight + 20) {
       
@@ -162,7 +465,6 @@ function renderStations() {
       
       const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
       
-      // Circle
       const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
       circle.setAttribute('cx', pos.x);
       circle.setAttribute('cy', pos.y);
@@ -172,7 +474,6 @@ function renderStations() {
       circle.setAttribute('stroke-width', 2);
       g.appendChild(circle);
       
-      // Text
       const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
       text.setAttribute('x', pos.x);
       text.setAttribute('y', pos.y + 4);
@@ -184,23 +485,14 @@ function renderStations() {
       g.appendChild(text);
       
       stationsGroup.appendChild(g);
-      visibleCount++;
     }
   });
-  
-  document.getElementById('station-count').textContent = `${visibleCount} stations`;
-}
-
-function setAQIColor() {
-  const color = getAQIColor(data.aqi);
-  document.getElementById('aqi-number').style.color = color === '#ffffff' ? '#000000' : color;
 }
 
 function renderLocationMarker() {
   const markerGroup = document.getElementById('location-marker');
   const pos = latLonToPixels(config.centerLat, config.centerLon);
   
-  // Outer circle
   const outerCircle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
   outerCircle.setAttribute('cx', pos.x);
   outerCircle.setAttribute('cy', pos.y);
@@ -210,7 +502,6 @@ function renderLocationMarker() {
   outerCircle.setAttribute('stroke-width', 3);
   markerGroup.appendChild(outerCircle);
   
-  // Inner circle
   const innerCircle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
   innerCircle.setAttribute('cx', pos.x);
   innerCircle.setAttribute('cy', pos.y);
@@ -223,7 +514,8 @@ function init() {
   renderMapTiles();
   renderLocationMarker();
   renderStations();
-  setAQIColor();
+  setIcons();
+  createAQIGauge(data.aqi);
 }
 
 if (document.readyState === 'loading') {
