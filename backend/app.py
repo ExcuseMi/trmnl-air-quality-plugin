@@ -168,6 +168,18 @@ async def init_db():
                 PRIMARY KEY (lat, lon)
             )
         ''')
+
+        # Stations cache table (1 hour TTL)
+        await db.execute('''
+            CREATE TABLE IF NOT EXISTS stations_cache (
+                lat REAL,
+                lon REAL,
+                zoom INTEGER,
+                stations_json TEXT,
+                cached_at TIMESTAMP,
+                PRIMARY KEY (lat, lon, zoom)
+            )
+        ''')
         await db.commit()
 
 
@@ -375,7 +387,30 @@ def tile_to_lat_lon(x, y, zoom):
 
 
 async def fetch_nearby_stations(lat, lon, zoom=9):
-    """Fetch all AQI stations in the visible map area"""
+    """Fetch all AQI stations in the visible map area - cached for 1 hour"""
+    # Round coordinates for cache key
+    lat_rounded = round(lat, 2)
+    lon_rounded = round(lon, 2)
+
+    # Check cache first (1 hour TTL)
+    async with aiosqlite.connect(DB_PATH) as db:
+        cursor = await db.execute(
+            'SELECT stations_json, cached_at FROM stations_cache WHERE lat = ? AND lon = ? AND zoom = ?',
+            (lat_rounded, lon_rounded, zoom)
+        )
+        row = await cursor.fetchone()
+
+        if row:
+            stations_json, cached_at = row
+            cached_time = datetime.fromisoformat(cached_at)
+            age = (datetime.now() - cached_time).total_seconds() / 3600
+
+            if age < 1:  # 1 hour cache
+                logger.info(f"Stations cache hit for ({lat_rounded}, {lon_rounded}, zoom {zoom}), age: {age:.1f}h")
+                return json.loads(stations_json)
+            else:
+                logger.info(f"Stations cache expired for ({lat_rounded}, {lon_rounded}, zoom {zoom}), age: {age:.1f}h")
+
     # Calculate tile coordinates
     center_x, center_y = lat_lon_to_tile(lat, lon, zoom)
 
@@ -419,6 +454,18 @@ async def fetch_nearby_stations(lat, lon, zoom=9):
                         })
 
                     logger.info(f"Fetched {len(filtered_stations)} valid stations (filtered from {len(raw_stations)})")
+
+                    # Cache the result
+                    async with aiosqlite.connect(DB_PATH) as db:
+                        await db.execute(
+                            '''INSERT OR REPLACE INTO stations_cache 
+                               (lat, lon, zoom, stations_json, cached_at)
+                               VALUES (?, ?, ?, ?, ?)''',
+                            (lat_rounded, lon_rounded, zoom, json.dumps(filtered_stations), datetime.now().isoformat())
+                        )
+                        await db.commit()
+
+                    logger.info(f"Cached stations for ({lat_rounded}, {lon_rounded}, zoom {zoom})")
                     return filtered_stations
                 else:
                     logger.info(f"API error: {data}")
