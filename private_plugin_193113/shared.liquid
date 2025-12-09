@@ -1,33 +1,14 @@
-{% assign aqi_response = data %}
-
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200');
-  
+
   .aqi-info {
     position: absolute;
     top: 10px;
     left: 10px;
-    background: white;
     border: 2px solid black;
     border-radius: 8px;
-    z-index: 1000;
-  }
-  
-  .pollutant-icon {
-    opacity: 0.8;
-    font-size: 1.2rem !important;
-  }
-  
-  .gauge-container {
-    width: 100%;
-    height: 100%;
-    position: relative;
-  }
-  
-  .aqi-label-bottom {
-    text-align: center;
-    font-weight: bold;
-    margin-top: -10px;
+    z-index: 100;
+
   }
 </style>
 
@@ -37,26 +18,35 @@
 <script src="https://usetrmnl.com/js/highcharts/12.3.0/pattern-fill.js"></script>
 
 {% template main %}
+{% if aqi_response == blank or aqi_response.error %}
+<div class="layout">
+  <div class="description">{{ aqi_response.message | default: "No data" }}</div>
+</div>
+<div class="title_bar">
+  <span class="title">Air Quality</span>
+</div>
+{% else %}
 <div class="layout layout--stretch m--0 p--0">
-  <svg class="image image--fill" viewBox="0 0 768 768" preserveAspectRatio="xMidYMid slice" style="width: 100%; height: 100%;">
+  <svg class="image image-dither image--fill w--full h--full" viewBox="0 0 768 768" preserveAspectRatio="xMidYMid slice">
     <g id="map-layers"></g>
     <g id="stations"></g>
     <g id="location-marker"></g>
   </svg>
-  
-  <div class="aqi-info flex flex--col gap--xsmall p--{% if compact %}2{%else%}4{%endif%}">
-    <div class="flex flex--row gap--small align-items--center">
-      <div class="flex flex--col m--0 p--0 gap--none" style="min-width: {% if compact %}70px{% else %}140px{% endif %}; padding-left: {% if compact %}0{% else %}8px{% endif %}; position: relative;">
-        <div id="aqi-gauge" class="gauge-container"></div>
-        <div class="aqi-label-bottom">
-          <span class="value {% if compact %}value--medium{% else %}value--xxlarge{% endif %}" id="aqi-number">{{ aqi_response.aqi }}</span>
-          <span class="label">AQI</span>
+
+  <div class="aqi-info  bg--white flex flex--col gap--xsmall p--2">
+    <div class="flex flex--row gap--small">
+      <div class="flex flex--col m--0 p--0 {% if compact %}w--18 {% else %}w--32 pl--2{% endif %}">
+        <div id="aqi-gauge-{{ 'now' | append_random }}" class="w--full h--full m--0 p--0"></div>
+        <div class="flex flex--row gap--xsmall flex--top m--0 p--0">
+          <span class="value {% unless compact %}value--xxlarge{% endunless %} p--0 m--0" id="aqi-number">{{ aqi_response.aqi }}</span>
+          <span class="description pt--2">AQI</span>
         </div>
       </div>
+
     </div>
     <div class="label label--inverted">{{ aqi_response.status | upcase }}</div>
     {% unless compact %}
-    <div class="flex flex--row align-items--center gap--xsmall">
+    <div class="flex flex--row gap--xsmall">
       <span class="material-symbols-outlined pollutant-icon" id="pollutant-icon"></span>
       {% if aqi_response.pm25 %}
       <div class="description">{{ aqi_response.pollutant_name }} ({{ aqi_response.pm25 }} µg/m³)</div>
@@ -65,10 +55,11 @@
       {% endif %}
     </div>
     {% if aqi_response.aqi > 100 %}
-    <div class="description" style="font-style: italic; font-size: 0.9em;">{{ aqi_response.health_advice }}</div>
+    <div class="description">{{ aqi_response.health_advice }}</div>
     {% endif %}
     {% if aqi_response.forecast %}
-    <div class="description" style="margin-top: 4px;">
+    <div class="divider"></div>
+    <div class="description mt--1">
       <strong>Tomorrow:</strong> AQI {{ aqi_response.forecast.aqi }}
     </div>
     {% endif %}
@@ -77,145 +68,117 @@
 </div>
 
 <div class="title_bar">
-  <span class="title">Air Quality</span>
+  <span class="title">{{ aqi_response.health_advice | default: "Air Quality" }}</span>
   <span class="instance">{{ aqi_response.city }}</span>
 </div>
-
 <script>
-const data = {{ aqi_response | json }};
+  const data = {{ aqi_response | json }};
 
-const config = {
-  viewWidth: 768,
-  viewHeight: 768,
-  tileSize: 256,
-  zoom: data.zoom,
-  centerTile: { x: data.tile_x, y: data.tile_y },
-  centerLat: data.lat,
-  centerLon: data.lon
-};
-
-// AQI level definitions
-const AQI_LEVELS = [
-  { min: 0, max: 50, name: 'Good' },
-  { min: 51, max: 100, name: 'Moderate' },
-  { min: 101, max: 150, name: 'Unhealthy for Sensitive' },
-  { min: 151, max: 200, name: 'Unhealthy' },
-  { min: 201, max: 300, name: 'Very Unhealthy' },
-  { min: 301, max: 500, name: 'Hazardous' }
-];
-
-// Mercator projection
-function latLonToTile(lat, lon, zoom) {
-  const n = Math.pow(2, zoom);
-  const latRad = lat * Math.PI / 180;
-  const x = (lon + 180) / 360 * n;
-  const y = (1 - Math.asinh(Math.tan(latRad)) / Math.PI) / 2 * n;
-  return { x, y };
-}
-
-function latLonToPixels(lat, lon) {
-  const tile = latLonToTile(lat, lon, config.zoom);
-  const leftTile = config.centerTile.x - 1;
-  const topTile = config.centerTile.y - 1;
-  const tileOffsetX = tile.x - leftTile;
-  const tileOffsetY = tile.y - topTile;
-  
-  const px = tileOffsetX * config.tileSize;
-  const py = tileOffsetY * config.tileSize;
-  
-  return { x: px, y: py };
-}
-
-// Display mode: 'bw' for 1-bit black & white, 'gray-4' for 2-bit (4 grays)
-const DISPLAY_MODE = 'gray-4'; // Change to 'bw' for black & white
-
-// Color palette for map dots based on display mode
-function getAQIColor(aqi) {
-  if (DISPLAY_MODE === 'bw') {
-    // 1-bit: Black & White only
-    if (aqi <= 100) return '#ffffff'; // Good/Moderate = White
-    return '#000000'; // Unhealthy+ = Black
-  } else {
-    // 2-bit: 4 grays (#ffffff, #aaaaaa, #555555, #000000)
-    if (aqi <= 50) return '#ffffff';      // Good: White
-    if (aqi <= 100) return '#aaaaaa';     // Moderate: Light gray
-    if (aqi <= 150) return '#555555';     // Unhealthy for Sensitive: Dark gray
-    return '#000000';                     // Unhealthy+: Black
-  }
-}
-
-function getStrokeColor(aqi) {
-  return '#000000';
-}
-
-function getTextColor(aqi) {
-  if (DISPLAY_MODE === 'bw') {
-    // 1-bit: Inverse of fill
-    if (aqi <= 100) return '#000000'; // White bg = Black text
-    return '#ffffff'; // Black bg = White text
-  } else {
-    // 2-bit: Black on light colors, white on dark
-    if (aqi <= 100) return '#000000';
-    return '#ffffff';
-  }
-}
-
-// Pollutant icon
-function getPollutantIcon(pollutant) {
-  const icons = {
-    'pm25': 'blur_on',
-    'pm10': 'blur_on',
-    'o3': 'wb_sunny',
-    'no2': 'local_shipping',
-    'co': 'directions_car',
-    'so2': 'factory'
+  const config = {
+    viewWidth: 768,
+    viewHeight: 768,
+    tileSize: 256,
+    zoom: data.zoom,
+    centerTile: { x: data.tile_x, y: data.tile_y },
+    centerLat: data.lat,
+    centerLon: data.lon
   };
-  return icons[pollutant] || 'monitoring';
-}
 
-// Pattern for gauge based on display mode
-function getPatternForAQI(aqi) {
-  if (DISPLAY_MODE === 'bw') {
-    // 1-bit: Only black and white patterns (lighter = better)
-    const patterns = [
-      { max: 50, image: 'https://usetrmnl.com/images/grayscale/gray-6.png' },  // Good: White
-      { max: 100, image: 'https://usetrmnl.com/images/grayscale/gray-6.png' }, // Moderate: White
-      { max: 150, image: 'https://usetrmnl.com/images/grayscale/gray-1.png' }, // Unhealthy Sens: Black
-      { max: 200, image: 'https://usetrmnl.com/images/grayscale/gray-1.png' }, // Unhealthy: Black
-      { max: 300, image: 'https://usetrmnl.com/images/grayscale/gray-1.png' }, // Very Unhealthy: Black
-      { max: 500, image: 'https://usetrmnl.com/images/grayscale/gray-1.png' }  // Hazardous: Black
-    ];
-    
-    for (const pattern of patterns) {
-      if (aqi <= pattern.max) {
-        return pattern.image;
-      }
-    }
-    return 'https://usetrmnl.com/images/grayscale/gray-1.png';
-  } else {
-    // 2-bit: 4 grays (lighter = better)
-    const patterns = [
-      { max: 50, image: 'https://usetrmnl.com/images/grayscale/gray-6.png' },  // Good: White
-      { max: 100, image: 'https://usetrmnl.com/images/grayscale/gray-5.png' }, // Moderate: Light gray
-      { max: 150, image: 'https://usetrmnl.com/images/grayscale/gray-2.png' }, // Unhealthy Sens: Dark gray
-      { max: 200, image: 'https://usetrmnl.com/images/grayscale/gray-1.png' }, // Unhealthy: Black
-      { max: 300, image: 'https://usetrmnl.com/images/grayscale/gray-1.png' }, // Very Unhealthy: Black
-      { max: 500, image: 'https://usetrmnl.com/images/grayscale/gray-1.png' }  // Hazardous: Black
-    ];
-    
-    for (const pattern of patterns) {
-      if (aqi <= pattern.max) {
-        return pattern.image;
-      }
-    }
-    return 'https://usetrmnl.com/images/grayscale/gray-1.png';
+  // AQI level definitions
+  const AQI_LEVELS = [
+    { min: 0, max: 50, name: 'Good' },
+    { min: 51, max: 100, name: 'Moderate' },
+    { min: 101, max: 150, name: 'Unhealthy for Sensitive' },
+    { min: 151, max: 200, name: 'Unhealthy' },
+    { min: 201, max: 300, name: 'Very Unhealthy' },
+    { min: 301, max: 500, name: 'Hazardous' }
+  ];
+
+  // Mercator projection
+  function latLonToTile(lat, lon, zoom) {
+    const n = Math.pow(2, zoom);
+    const latRad = lat * Math.PI / 180;
+    const x = (lon + 180) / 360 * n;
+    const y = (1 - Math.asinh(Math.tan(latRad)) / Math.PI) / 2 * n;
+    return { x, y };
   }
-}
 
-// Create AQI gauge - NO INTERNAL LABEL
-function createAQIGauge(aqi) {
-  const isCompact = {% if compact %}true{% else %}false{% endif %};
-  
+  function latLonToPixels(lat, lon) {
+    const tile = latLonToTile(lat, lon, config.zoom);
+    const leftTile = config.centerTile.x - 1;
+    const topTile = config.centerTile.y - 1;
+    const tileOffsetX = tile.x - leftTile;
+    const tileOffsetY = tile.y - topTile;
+
+    const px = tileOffsetX * config.tileSize;
+    const py = tileOffsetY * config.tileSize;
+
+    return { x: px, y: py };
+  }
+
+  // Display mode: 'bw' for 1-bit black & white, 'gray-4' for 2-bit (4 grays)
+  const DISPLAY_MODE = 'gray-4'; // Change to 'bw' for black & white
+
+  // Color palette for map dots based on display mode
+  function getAQIColor(aqi) {
+    if (DISPLAY_MODE === 'bw') {
+      // 1-bit: Black & White only
+      if (aqi <= 100) return '#ffffff'; // Good/Moderate = White
+      return '#000000'; // Unhealthy+ = Black
+    } else {
+      // 2-bit: 4 grays (#ffffff, #aaaaaa, #555555, #000000)
+      if (aqi <= 50) return '#ffffff';      // Good: White
+      if (aqi <= 100) return '#aaaaaa';     // Moderate: Light gray
+      if (aqi <= 150) return '#555555';     // Unhealthy for Sensitive: Dark gray
+      return '#000000';                     // Unhealthy+: Black
+    }
+  }
+
+  function getStrokeColor(aqi) {
+    return '#000000';
+  }
+
+  function getTextColor(aqi) {
+      // 2-bit: Black on light colors, white on dark
+      if (aqi <= 100) return '#000000';
+      return '#ffffff';
+  }
+
+  // Pollutant icon
+  function getPollutantIcon(pollutant) {
+    const icons = {
+      'pm25': 'blur_on',
+      'pm10': 'blur_on',
+      'o3': 'wb_sunny',
+      'no2': 'local_shipping',
+      'co': 'directions_car',
+      'so2': 'factory'
+    };
+    return icons[pollutant] || 'monitoring';
+  }
+
+  function getPatternForAQI(aqi) {
+      const patterns = [
+        { max: 50, image: 'https://usetrmnl.com/images/grayscale/gray-6.png' },  // Good: White
+        { max: 100, image: 'https://usetrmnl.com/images/grayscale/gray-5.png' }, // Moderate: Light gray
+        { max: 150, image: 'https://usetrmnl.com/images/grayscale/gray-2.png' }, // Unhealthy Sens: Dark gray
+        { max: 200, image: 'https://usetrmnl.com/images/grayscale/gray-1.png' }, // Unhealthy: Black
+        { max: 300, image: 'https://usetrmnl.com/images/grayscale/gray-1.png' }, // Very Unhealthy: Black
+        { max: 500, image: 'https://usetrmnl.com/images/grayscale/gray-1.png' }  // Hazardous: Black
+      ];
+
+      for (const pattern of patterns) {
+        if (aqi <= pattern.max) {
+          return pattern.image;
+        }
+      }
+      return 'https://usetrmnl.com/images/grayscale/gray-1.png';
+  }
+
+  // Create AQI gauge - NO INTERNAL LABEL
+  function createAQIGauge(aqi) {
+    const isCompact = {% if compact %}true{% else %}false{% endif %};
+
   const gaugeSize = isCompact ? '75%' : '100%'; // Further reduced to prevent cutoff
   const dialWidth = isCompact ? 3 : 6;
   const pivotRadius = isCompact ? 2 : 5;
@@ -223,7 +186,7 @@ function createAQIGauge(aqi) {
   const marginBottom = isCompact ? 3 : 15;
   const paneCenterY = isCompact ? '50%' : '50%';
   const innerRadius = isCompact ? '85%' : '80%';
-  
+
   // Dynamic max based on AQI value for better visibility
   // Minimum scale is 200, increases if AQI reaches the max
   let maxValue, tickPositions;
@@ -252,13 +215,13 @@ function createAQIGauge(aqi) {
     maxValue = 500;
     tickPositions = [0, 150, 200, 300, 500];
   }
-  
+
   // Create plot bands only for visible range
   const plotBands = AQI_LEVELS
     .filter(level => level.min < maxValue)
     .map(level => {
       let color;
-      
+
       if (DISPLAY_MODE === 'bw') {
         // 1-bit: Use pattern images
         color = {
@@ -287,7 +250,7 @@ function createAQIGauge(aqi) {
           color = '#000000';  // Unhealthy+: Black
         }
       }
-      
+
       return {
         from: level.min,
         to: Math.min(level.max, maxValue),
@@ -296,8 +259,9 @@ function createAQIGauge(aqi) {
         borderRadius: '50%'
       };
     });
-  
-  Highcharts.chart('aqi-gauge', {
+  const gaugeId = document.querySelector('[id^="aqi-gauge-"]').id;
+
+  Highcharts.chart(gaugeId, {
     chart: {
       type: "gauge",
       height: "100%",
@@ -391,137 +355,138 @@ function createAQIGauge(aqi) {
       enabled: false
     }
   });
-}
+  }
 
-function setIcons() {
-  if (!{% if compact %}true{% else %}false{% endif %}) {
-    const pollutantIcon = getPollutantIcon(data.dominentpol);
-    const pollutantIconElement = document.getElementById('pollutant-icon');
-    if (pollutantIconElement) {
-      pollutantIconElement.textContent = pollutantIcon;
+  function setIcons() {
+    if (!{% if compact %}true{% else %}false{% endif %}) {
+      const pollutantIcon = getPollutantIcon(data.dominentpol);
+      const pollutantIconElement = document.getElementById('pollutant-icon');
+      if (pollutantIconElement) {
+        pollutantIconElement.textContent = pollutantIcon;
+      }
     }
   }
-}
 
-function renderMapTiles() {
-  const mapLayers = document.getElementById('map-layers');
-  const centerX = config.centerTile.x;
-  const centerY = config.centerTile.y;
-  
-  for (let dy = -1; dy <= 1; dy++) {
-    for (let dx = -1; dx <= 1; dx++) {
-      const tx = centerX + dx;
-      const ty = centerY + dy;
-      
-      // Calculate exact integer positions
-      const x = Math.round((dx + 1) * config.tileSize);
-      const y = Math.round((dy + 1) * config.tileSize);
-      
-      // Create rectangle at exact integer boundaries
-      const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-      rect.setAttribute('x', x);
-      rect.setAttribute('y', y);
-      rect.setAttribute('width', config.tileSize);
-      rect.setAttribute('height', config.tileSize);
-      rect.setAttribute('fill', 'url(#tile_' + tx + '_' + ty + ')');
-      rect.setAttribute('shape-rendering', 'crispEdges');
-      mapLayers.appendChild(rect);
-      
-      // Create pattern definition
-      const pattern = document.createElementNS('http://www.w3.org/2000/svg', 'pattern');
-      pattern.setAttribute('id', 'tile_' + tx + '_' + ty);
-      pattern.setAttribute('patternUnits', 'userSpaceOnUse');
-      pattern.setAttribute('x', x);
-      pattern.setAttribute('y', y);
-      pattern.setAttribute('width', config.tileSize);
-      pattern.setAttribute('height', config.tileSize);
-      
-      const image = document.createElementNS('http://www.w3.org/2000/svg', 'image');
-      image.setAttributeNS('http://www.w3.org/1999/xlink', 'href',
-        `https://tile.openstreetmap.org/${config.zoom}/${tx}/${ty}.png`);
-      image.setAttribute('width', config.tileSize);
-      image.setAttribute('height', config.tileSize);
-      image.setAttribute('preserveAspectRatio', 'none');
-      
-      pattern.appendChild(image);
-      mapLayers.appendChild(pattern);
+  function renderMapTiles() {
+    const mapLayers = document.getElementById('map-layers');
+    const centerX = config.centerTile.x;
+    const centerY = config.centerTile.y;
+
+    for (let dy = -1; dy <= 1; dy++) {
+      for (let dx = -1; dx <= 1; dx++) {
+        const tx = centerX + dx;
+        const ty = centerY + dy;
+
+        // Calculate exact integer positions
+        const x = Math.round((dx + 1) * config.tileSize);
+        const y = Math.round((dy + 1) * config.tileSize);
+
+        // Create rectangle at exact integer boundaries
+        const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+        rect.setAttribute('x', x);
+        rect.setAttribute('y', y);
+        rect.setAttribute('width', config.tileSize);
+        rect.setAttribute('height', config.tileSize);
+        rect.setAttribute('fill', 'url(#tile_' + tx + '_' + ty + ')');
+        rect.setAttribute('shape-rendering', 'crispEdges');
+        mapLayers.appendChild(rect);
+
+        // Create pattern definition
+        const pattern = document.createElementNS('http://www.w3.org/2000/svg', 'pattern');
+        pattern.setAttribute('id', 'tile_' + tx + '_' + ty);
+        pattern.setAttribute('patternUnits', 'userSpaceOnUse');
+        pattern.setAttribute('x', x);
+        pattern.setAttribute('y', y);
+        pattern.setAttribute('width', config.tileSize);
+        pattern.setAttribute('height', config.tileSize);
+
+        const image = document.createElementNS('http://www.w3.org/2000/svg', 'image');
+        image.setAttributeNS('http://www.w3.org/1999/xlink', 'href',
+                             `https://tile.openstreetmap.org/${config.zoom}/${tx}/${ty}.png`);
+        image.setAttribute('width', config.tileSize);
+        image.setAttribute('height', config.tileSize);
+        image.setAttribute('preserveAspectRatio', 'none');
+
+        pattern.appendChild(image);
+        mapLayers.appendChild(pattern);
+      }
     }
   }
-}
 
-function renderStations() {
-  const stationsGroup = document.getElementById('stations');
-  const stations = data.stations || [];
-  
-  stations.forEach(station => {
-    const pos = latLonToPixels(station.lat, station.lon);
-    
-    if (pos.x >= -20 && pos.x <= config.viewWidth + 20 && 
-        pos.y >= -20 && pos.y <= config.viewHeight + 20) {
-      
-      const fillColor = getAQIColor(station.aqi);
-      const strokeColor = getStrokeColor(station.aqi);
-      const textColor = getTextColor(station.aqi);
-      
-      const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-      
-      const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-      circle.setAttribute('cx', pos.x);
-      circle.setAttribute('cy', pos.y);
-      circle.setAttribute('r', 12);
-      circle.setAttribute('fill', fillColor);
-      circle.setAttribute('stroke', strokeColor);
-      circle.setAttribute('stroke-width', 2);
-      g.appendChild(circle);
-      
-      const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-      text.setAttribute('x', pos.x);
-      text.setAttribute('y', pos.y + 4);
-      text.setAttribute('text-anchor', 'middle');
-      text.setAttribute('font-size', 11);
-      text.setAttribute('font-weight', 'bold');
-      text.setAttribute('fill', textColor);
-      text.textContent = station.aqi;
-      g.appendChild(text);
-      
-      stationsGroup.appendChild(g);
-    }
-  });
-}
+  function renderStations() {
+    const stationsGroup = document.getElementById('stations');
+    const stations = data.stations || [];
 
-function renderLocationMarker() {
-  const markerGroup = document.getElementById('location-marker');
-  const pos = latLonToPixels(config.centerLat, config.centerLon);
-  
-  const outerCircle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-  outerCircle.setAttribute('cx', pos.x);
-  outerCircle.setAttribute('cy', pos.y);
-  outerCircle.setAttribute('r', 15);
-  outerCircle.setAttribute('fill', 'white');
-  outerCircle.setAttribute('stroke', 'black');
-  outerCircle.setAttribute('stroke-width', 3);
-  markerGroup.appendChild(outerCircle);
-  
-  const innerCircle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-  innerCircle.setAttribute('cx', pos.x);
-  innerCircle.setAttribute('cy', pos.y);
-  innerCircle.setAttribute('r', 6);
-  innerCircle.setAttribute('fill', 'black');
-  markerGroup.appendChild(innerCircle);
-}
+    stations.forEach(station => {
+      const pos = latLonToPixels(station.lat, station.lon);
 
-function init() { 
-  renderMapTiles();
-  renderLocationMarker();
-  renderStations();
-  setIcons();
-  createAQIGauge(data.aqi);
-}
+      if (pos.x >= -20 && pos.x <= config.viewWidth + 20 && 
+          pos.y >= -20 && pos.y <= config.viewHeight + 20) {
 
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', init);
-} else {
-  init();
-}
+        const fillColor = getAQIColor(station.aqi);
+        const strokeColor = getStrokeColor(station.aqi);
+        const textColor = getTextColor(station.aqi);
+
+        const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+
+        const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        circle.setAttribute('cx', pos.x);
+        circle.setAttribute('cy', pos.y);
+        circle.setAttribute('r', 12);
+        circle.setAttribute('fill', fillColor);
+        circle.setAttribute('stroke', strokeColor);
+        circle.setAttribute('stroke-width', 2);
+        g.appendChild(circle);
+
+        const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        text.setAttribute('x', pos.x);
+        text.setAttribute('y', pos.y + 4);
+        text.setAttribute('text-anchor', 'middle');
+        text.setAttribute('font-size', 11);
+        text.setAttribute('font-weight', 'bold');
+        text.setAttribute('fill', textColor);
+        text.textContent = station.aqi;
+        g.appendChild(text);
+
+        stationsGroup.appendChild(g);
+      }
+    });
+  }
+
+  function renderLocationMarker() {
+    const markerGroup = document.getElementById('location-marker');
+    const pos = latLonToPixels(config.centerLat, config.centerLon);
+
+    const outerCircle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    outerCircle.setAttribute('cx', pos.x);
+    outerCircle.setAttribute('cy', pos.y);
+    outerCircle.setAttribute('r', 15);
+    outerCircle.setAttribute('fill', 'white');
+    outerCircle.setAttribute('stroke', 'black');
+    outerCircle.setAttribute('stroke-width', 3);
+    markerGroup.appendChild(outerCircle);
+
+    const innerCircle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    innerCircle.setAttribute('cx', pos.x);
+    innerCircle.setAttribute('cy', pos.y);
+    innerCircle.setAttribute('r', 6);
+    innerCircle.setAttribute('fill', 'black');
+    markerGroup.appendChild(innerCircle);
+  }
+
+  function init() { 
+    renderMapTiles();
+    renderLocationMarker();
+    renderStations();
+    setIcons();
+    createAQIGauge(data.aqi);
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
 </script>
+{% endif %}
 {% endtemplate %}

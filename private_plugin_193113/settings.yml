@@ -12,7 +12,7 @@ custom_fields:
 - keyname: author_info
   name: About This Plugin
   field_type: author_bio
-  description: Monitor air quality in real-time with detailed AQI readings, maps, and 24-hour forecasts.
+  description: Monitor air quality in real-time with detailed AQI readings, maps, and 24-hour forecasts.<br /><strong>API will refresh once per hour!</strong>
   github_url: https://github.com/ExcuseMi/trmnl-air-quality-plugin
   category: environment
 - keyname: address
