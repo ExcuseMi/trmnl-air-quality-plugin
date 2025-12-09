@@ -18,6 +18,19 @@ logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
 
+# Load translations from JSON file
+TRANSLATIONS_FILE = os.path.join(os.path.dirname(__file__), 'translations.json')
+with open(TRANSLATIONS_FILE, 'r', encoding='utf-8') as f:
+    TRANSLATIONS = json.load(f)
+
+
+def get_translations(locale):
+    """Get translations for locale, fallback to English"""
+    # Extract language code (ignore country: en-US -> en)
+    lang = locale.split('-')[0].lower() if locale else 'en'
+    return TRANSLATIONS.get(lang, TRANSLATIONS['en'])
+
+
 # Configuration
 AQICN_API_KEY = os.getenv('AQICN_API_KEY')
 OPENWEATHER_API_KEY = os.getenv('OPENWEATHER_API_KEY')
@@ -103,49 +116,45 @@ def require_trmnl_ip(f):
     return decorated_function
 
 
-def get_aqi_status(aqi):
+def get_aqi_status(aqi, locale='en'):
     """Convert AQI number to status text"""
+    translations = get_translations(locale)
     if aqi <= 50:
-        return "Good"
+        return translations['status']['good']
     elif aqi <= 100:
-        return "Moderate"
+        return translations['status']['moderate']
     elif aqi <= 150:
-        return "Unhealthy for Sensitive"
+        return translations['status']['unhealthy_sensitive']
     elif aqi <= 200:
-        return "Unhealthy"
+        return translations['status']['unhealthy']
     elif aqi <= 300:
-        return "Very Unhealthy"
+        return translations['status']['very_unhealthy']
     else:
-        return "Hazardous"
+        return translations['status']['hazardous']
 
 
-def get_pollutant_name(pol_code):
+def get_pollutant_name(pol_code, locale='en'):
     """Convert pollutant code to readable name"""
-    pollutants = {
-        'pm25': 'PM2.5',
-        'pm10': 'PM10',
-        'o3': 'Ozone',
-        'no2': 'NO₂',
-        'so2': 'SO₂',
-        'co': 'CO'
-    }
+    translations = get_translations(locale)
+    pollutants = translations['pollutants']
     return pollutants.get(pol_code, pol_code.upper() if pol_code else 'Unknown')
 
 
-def get_health_advice(aqi):
+def get_health_advice(aqi, locale='en'):
     """Get health advice based on AQI level"""
+    translations = get_translations(locale)
     if aqi <= 50:
-        return "Air quality is good. Enjoy outdoor activities!"
+        return translations['health_advice']['good']
     elif aqi <= 100:
-        return "Air quality is acceptable for most people."
+        return translations['health_advice']['moderate']
     elif aqi <= 150:
-        return "Sensitive groups should reduce prolonged outdoor exertion."
+        return translations['health_advice']['unhealthy_sensitive']
     elif aqi <= 200:
-        return "Everyone should reduce prolonged outdoor exertion."
+        return translations['health_advice']['unhealthy']
     elif aqi <= 300:
-        return "Avoid prolonged outdoor exertion. Keep windows closed."
+        return translations['health_advice']['very_unhealthy']
     else:
-        return "Stay indoors and keep windows closed. Health alert!"
+        return translations['health_advice']['hazardous']
 
 
 async def init_db():
@@ -564,11 +573,16 @@ async def cache_aqi(lat, lon, aqi_data):
         logger.info(f"Cached AQI data for {lat},{lon}")
 
 
-async def fetch_aqi_data(lat, lon, zoom=9):
+async def fetch_aqi_data(lat, lon, zoom=9, locale='en'):
     """Fetch AQI data for a location"""
     # Check cache first
     cached = await get_cached_aqi(lat, lon)
     if cached:
+        # Re-translate cached data with current locale
+        cached['status'] = get_aqi_status(cached['aqi'], locale)
+        cached['pollutant_name'] = get_pollutant_name(cached['dominentpol'], locale)
+        cached['health_advice'] = get_health_advice(cached['aqi'], locale)
+
         # Add tile coordinates and stations
         tile_x, tile_y = lat_lon_to_tile(lat, lon, zoom)
         cached['tile_x'] = tile_x
@@ -619,12 +633,12 @@ async def fetch_aqi_data(lat, lon, zoom=9):
                 'lat': lat,
                 'lon': lon,
                 'aqi': aqi,
-                'status': get_aqi_status(aqi),
+                'status': get_aqi_status(aqi, locale),
                 'city': city,
                 'country': country,
                 'dominentpol': dominentpol,
-                'pollutant_name': get_pollutant_name(dominentpol),
-                'health_advice': get_health_advice(aqi),
+                'pollutant_name': get_pollutant_name(dominentpol, locale),
+                'health_advice': get_health_advice(aqi, locale),
                 'pm25': pm25,
                 'pm10': pm10,
                 'tile_x': None,
@@ -667,11 +681,13 @@ async def get_aqi():
       - lon: longitude (optional if address provided)
       - address: location address (optional if lat/lon provided)
       - zoom: tile zoom level (default: 9)
+      - locale: language code (default: en, supports: en, fr, nl, de, es)
     """
     lat = request.args.get('lat', type=float)
     lon = request.args.get('lon', type=float)
     address = request.args.get('address', type=str)
     zoom = request.args.get('zoom', default=9, type=int)
+    locale = request.args.get('locale', default='en', type=str)
 
     # If address provided, geocode it
     if address:
@@ -686,7 +702,7 @@ async def get_aqi():
     if lat is None or lon is None:
         return jsonify({'error': 'Missing required parameters: (lat, lon) or address'}), 400
 
-    aqi_data = await fetch_aqi_data(lat, lon, zoom)
+    aqi_data = await fetch_aqi_data(lat, lon, zoom, locale)
 
     if not aqi_data:
         return jsonify({'error': 'Failed to fetch AQI data'}), 500
@@ -695,6 +711,9 @@ async def get_aqi():
     forecast = await fetch_openweather_forecast(lat, lon)
     if forecast:
         aqi_data['forecast'] = forecast
+
+    # Add translations to response
+    aqi_data['translations'] = get_translations(locale)
 
     return jsonify(aqi_data)
 

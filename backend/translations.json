@@ -1,0 +1,147 @@
+{
+  "en": {
+    "air_quality": "Air Quality",
+    "tomorrow": "Tomorrow",
+    "aqi_label": "AQI",
+    "status": {
+      "good": "Good",
+      "moderate": "Moderate",
+      "unhealthy_sensitive": "Unhealthy for Sensitive",
+      "unhealthy": "Unhealthy",
+      "very_unhealthy": "Very Unhealthy",
+      "hazardous": "Hazardous"
+    },
+    "pollutants": {
+      "pm25": "PM2.5",
+      "pm10": "PM10",
+      "o3": "Ozone",
+      "no2": "NO₂",
+      "so2": "SO₂",
+      "co": "CO"
+    },
+    "health_advice": {
+      "good": "Air quality is good. Enjoy outdoor activities!",
+      "moderate": "Air quality is acceptable for most people.",
+      "unhealthy_sensitive": "Sensitive groups should reduce prolonged outdoor exertion.",
+      "unhealthy": "Everyone should reduce prolonged outdoor exertion.",
+      "very_unhealthy": "Avoid prolonged outdoor exertion. Keep windows closed.",
+      "hazardous": "Stay indoors and keep windows closed. Health alert!"
+    }
+  },
+  "fr": {
+    "air_quality": "Qualité de l'air",
+    "tomorrow": "Demain",
+    "aqi_label": "IQA",
+    "status": {
+      "good": "Bon",
+      "moderate": "Modéré",
+      "unhealthy_sensitive": "Mauvais pour les groupes sensibles",
+      "unhealthy": "Mauvais",
+      "very_unhealthy": "Très mauvais",
+      "hazardous": "Dangereux"
+    },
+    "pollutants": {
+      "pm25": "PM2.5",
+      "pm10": "PM10",
+      "o3": "Ozone",
+      "no2": "NO₂",
+      "so2": "SO₂",
+      "co": "CO"
+    },
+    "health_advice": {
+      "good": "La qualité de l'air est bonne. Profitez des activités en plein air !",
+      "moderate": "La qualité de l'air est acceptable pour la plupart des gens.",
+      "unhealthy_sensitive": "Les groupes sensibles devraient réduire les efforts prolongés en plein air.",
+      "unhealthy": "Tout le monde devrait réduire les efforts prolongés en plein air.",
+      "very_unhealthy": "Évitez les efforts prolongés en plein air. Gardez les fenêtres fermées.",
+      "hazardous": "Restez à l'intérieur et gardez les fenêtres fermées. Alerte santé !"
+    }
+  },
+  "nl": {
+    "air_quality": "Luchtkwaliteit",
+    "tomorrow": "Morgen",
+    "aqi_label": "LKI",
+    "status": {
+      "good": "Goed",
+      "moderate": "Matig",
+      "unhealthy_sensitive": "Ongezond voor gevoelige groepen",
+      "unhealthy": "Ongezond",
+      "very_unhealthy": "Zeer ongezond",
+      "hazardous": "Gevaarlijk"
+    },
+    "pollutants": {
+      "pm25": "PM2.5",
+      "pm10": "PM10",
+      "o3": "Ozon",
+      "no2": "NO₂",
+      "so2": "SO₂",
+      "co": "CO"
+    },
+    "health_advice": {
+      "good": "De luchtkwaliteit is goed. Geniet van buitenactiviteiten!",
+      "moderate": "De luchtkwaliteit is acceptabel voor de meeste mensen.",
+      "unhealthy_sensitive": "Gevoelige groepen moeten langdurige inspanningen buitenshuis verminderen.",
+      "unhealthy": "Iedereen moet langdurige inspanningen buitenshuis verminderen.",
+      "very_unhealthy": "Vermijd langdurige inspanningen buitenshuis. Houd ramen gesloten.",
+      "hazardous": "Blijf binnen en houd ramen gesloten. Gezondheidsalert!"
+    }
+  },
+  "de": {
+    "air_quality": "Luftqualität",
+    "tomorrow": "Morgen",
+    "aqi_label": "LQI",
+    "status": {
+      "good": "Gut",
+      "moderate": "Mäßig",
+      "unhealthy_sensitive": "Ungesund für empfindliche Gruppen",
+      "unhealthy": "Ungesund",
+      "very_unhealthy": "Sehr ungesund",
+      "hazardous": "Gefährlich"
+    },
+    "pollutants": {
+      "pm25": "PM2.5",
+      "pm10": "PM10",
+      "o3": "Ozon",
+      "no2": "NO₂",
+      "so2": "SO₂",
+      "co": "CO"
+    },
+    "health_advice": {
+      "good": "Die Luftqualität ist gut. Genießen Sie Aktivitäten im Freien!",
+      "moderate": "Die Luftqualität ist für die meisten Menschen akzeptabel.",
+      "unhealthy_sensitive": "Empfindliche Gruppen sollten längere Anstrengungen im Freien reduzieren.",
+      "unhealthy": "Jeder sollte längere Anstrengungen im Freien reduzieren.",
+      "very_unhealthy": "Vermeiden Sie längere Anstrengungen im Freien. Fenster geschlossen halten.",
+      "hazardous": "Bleiben Sie drinnen und halten Sie die Fenster geschlossen. Gesundheitsalarm!"
+    }
+  },
+  "es": {
+    "air_quality": "Calidad del aire",
+    "tomorrow": "Mañana",
+    "aqi_label": "ICA",
+    "status": {
+      "good": "Buena",
+      "moderate": "Moderada",
+      "unhealthy_sensitive": "Mala para grupos sensibles",
+      "unhealthy": "Mala",
+      "very_unhealthy": "Muy mala",
+      "hazardous": "Peligrosa"
+    },
+    "pollutants": {
+      "pm25": "PM2.5",
+      "pm10": "PM10",
+      "o3": "Ozono",
+      "no2": "NO₂",
+      "so2": "SO₂",
+      "co": "CO"
+    },
+    "health_advice": {
+      "good": "La calidad del aire es buena. ¡Disfrute de actividades al aire libre!",
+      "moderate": "La calidad del aire es aceptable para la mayoría de las personas.",
+      "unhealthy_sensitive": "Los grupos sensibles deben reducir el esfuerzo prolongado al aire libre.",
+      "unhealthy": "Todos deben reducir el esfuerzo prolongado al aire libre.",
+      "very_unhealthy": "Evite el esfuerzo prolongado al aire libre. Mantenga las ventanas cerradas.",
+      "hazardous": "¡Permanezca en el interior y mantenga las ventanas cerradas. Alerta de salud!"
+    }
+  }
+}
