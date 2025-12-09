@@ -1,12 +1,13 @@
-import json
-import logging
-import math
 import os
-from datetime import datetime, timedelta
-
+import asyncio
 import aiosqlite
 import httpx
-from flask import Flask, request, jsonify
+import time
+import json
+import logging
+from datetime import datetime, timedelta
+from flask import Flask, request, jsonify, send_file
+import math
 
 # Configure logging
 logging.basicConfig(
@@ -582,12 +583,13 @@ async def fetch_aqi_data(lat, lon, zoom=9, locale='en'):
         cached['pollutant_name'] = get_pollutant_name(cached['dominentpol'], locale)
         cached['health_advice'] = get_health_advice(cached['aqi'], locale)
 
-        # Add tile coordinates and stations
+        # Add tile coordinates
         tile_x, tile_y = lat_lon_to_tile(lat, lon, zoom)
         cached['tile_x'] = tile_x
         cached['tile_y'] = tile_y
         cached['zoom'] = zoom
-        cached['stations'] = await fetch_nearby_stations(lat, lon, zoom)
+        # Stations will be fetched separately (in parallel at endpoint level)
+        cached['stations'] = []
         return cached
 
     # Fetch from AQICN API
@@ -651,8 +653,8 @@ async def fetch_aqi_data(lat, lon, zoom=9, locale='en'):
             result['tile_x'] = tile_x
             result['tile_y'] = tile_y
 
-            # Fetch nearby stations
-            result['stations'] = await fetch_nearby_stations(lat, lon, zoom)
+            # Stations will be fetched separately (in parallel)
+            result['stations'] = []
 
             # Cache the result
             await cache_aqi(lat, lon, result)
@@ -701,13 +703,33 @@ async def get_aqi():
     if lat is None or lon is None:
         return jsonify({'error': 'Missing required parameters: (lat, lon) or address'}), 400
 
-    aqi_data = await fetch_aqi_data(lat, lon, zoom, locale)
+    # Fetch AQI data, forecast, and stations in parallel
+    aqi_data, forecast, stations = await asyncio.gather(
+        fetch_aqi_data(lat, lon, zoom, locale),
+        fetch_openweather_forecast(lat, lon),
+        fetch_nearby_stations(lat, lon, zoom),
+        return_exceptions=True
+    )
+
+    # Handle exceptions
+    if isinstance(aqi_data, Exception):
+        logger.error(f"Error fetching AQI data: {aqi_data}")
+        aqi_data = None
+    if isinstance(forecast, Exception):
+        logger.error(f"Error fetching forecast: {forecast}")
+        forecast = None
+    if isinstance(stations, Exception):
+        logger.error(f"Error fetching stations: {stations}")
+        stations = []
 
     if not aqi_data:
         return jsonify({'error': 'Failed to fetch AQI data'}), 500
 
-    # Fetch forecast data
-    forecast = await fetch_openweather_forecast(lat, lon)
+    # Add stations to AQI data
+    if stations and not isinstance(stations, Exception):
+        aqi_data['stations'] = stations
+
+    # Add forecast if available
     if forecast:
         aqi_data['forecast'] = forecast
 
