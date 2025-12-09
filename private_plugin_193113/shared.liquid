@@ -1,3 +1,6 @@
+{% assign aqi_response = data %}
+{% assign t = aqi_response.translations %}
+
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200');
 
@@ -8,7 +11,6 @@
     border: 2px solid black;
     border-radius: 8px;
     z-index: 100;
-
   }
 </style>
 
@@ -20,10 +22,10 @@
 {% template main %}
 {% if aqi_response == blank or aqi_response.error %}
 <div class="layout">
-  <div class="description">{{ aqi_response.message | default: "No data" }}</div>
+  <div class="description">{{ aqi_response.message | default: t.no_data | default: "No data" }}</div>
 </div>
 <div class="title_bar">
-  <span class="title">Air Quality</span>
+  <span class="title">{% if t %}{{ t.air_quality | default: "Air Quality" }}{% else %}Air Quality{% endif %}</span>
 </div>
 {% else %}
 <div class="layout layout--stretch m--0 p--0">
@@ -32,17 +34,15 @@
     <g id="stations"></g>
     <g id="location-marker"></g>
   </svg>
-
-  <div class="aqi-info  bg--white flex flex--col gap--xsmall p--2">
+  <div class="aqi-info bg--white flex flex--col gap--xsmall p--2">
     <div class="flex flex--row gap--small">
       <div class="flex flex--col m--0 p--0 {% if compact %}w--18 {% else %}w--32 pl--2{% endif %}">
         <div id="aqi-gauge-{{ 'now' | append_random }}" class="w--full h--full m--0 p--0"></div>
         <div class="flex flex--row gap--xsmall flex--top m--0 p--0">
-          <span class="value {% unless compact %}value--xxlarge{% endunless %} p--0 m--0" id="aqi-number">{{ aqi_response.aqi }}</span>
-          <span class="description pt--2">AQI</span>
+          <span class="value {% unless compact %}value--xlarge{% endunless %} p--0 m--0" id="aqi-number">{{ aqi_response.aqi }}</span>
+          <span class="description pt--2">{% if t %}{{ t.aqi_label }}{% else %}AQI{% endif %}</span>
         </div>
       </div>
-
     </div>
     <div class="label label--inverted">{{ aqi_response.status | upcase }}</div>
     {% unless compact %}
@@ -54,13 +54,10 @@
       <div class="description">{{ aqi_response.pollutant_name }}</div>
       {% endif %}
     </div>
-    {% if aqi_response.aqi > 100 %}
-    <div class="description">{{ aqi_response.health_advice }}</div>
-    {% endif %}
     {% if aqi_response.forecast %}
     <div class="divider"></div>
     <div class="description mt--1">
-      <strong>Tomorrow:</strong> AQI {{ aqi_response.forecast.aqi }}
+      <strong>{% if t %}{{ t.tomorrow }}{% else %}Tomorrow{% endif %}:</strong> {% if t %}{{ t.aqi_label }}{% else %}AQI{% endif %} {{ aqi_response.forecast.aqi }}
     </div>
     {% endif %}
     {% endunless %}
@@ -68,7 +65,7 @@
 </div>
 
 <div class="title_bar">
-  <span class="title">{{ aqi_response.health_advice | default: "Air Quality" }}</span>
+  <span class="title">{{ aqi_response.health_advice | default: t.air_quality }}</span>
   <span class="instance">{{ aqi_response.city }}</span>
 </div>
 <script>
@@ -134,9 +131,6 @@
     }
   }
 
-  function getStrokeColor(aqi) {
-    return '#000000';
-  }
 
   function getTextColor(aqi) {
       // 2-bit: Black on light colors, white on dark
@@ -179,7 +173,7 @@
   function createAQIGauge(aqi) {
     const isCompact = {% if compact %}true{% else %}false{% endif %};
 
-  const gaugeSize = isCompact ? '75%' : '100%'; // Further reduced to prevent cutoff
+  const gaugeSize = isCompact ? '75%' : '100%';
   const dialWidth = isCompact ? 3 : 6;
   const pivotRadius = isCompact ? 2 : 5;
   const marginTop = isCompact ? 3 : 15;
@@ -188,18 +182,8 @@
   const innerRadius = isCompact ? '85%' : '80%';
 
   // Dynamic max based on AQI value for better visibility
-  // Minimum scale is 200, increases if AQI reaches the max
   let maxValue, tickPositions;
-  if (aqi <= 50) {
-    maxValue = 200;
-    tickPositions = [0, 50, 100, 150, 200];
-  } else if (aqi <= 100) {
-    maxValue = 200;
-    tickPositions = [0, 50, 100, 150, 200];
-  } else if (aqi <= 150) {
-    maxValue = 200;
-    tickPositions = [0, 50, 100, 150, 200];
-  } else if (aqi < 200) {
+  if (aqi < 200) {
     maxValue = 200;
     tickPositions = [0, 50, 100, 150, 200];
   } else if (aqi === 200) {
@@ -223,7 +207,6 @@
       let color;
 
       if (DISPLAY_MODE === 'bw') {
-        // 1-bit: Use pattern images
         color = {
           pattern: {
             image: getPatternForAQI(level.max),
@@ -234,7 +217,6 @@
       } else {
         // 2-bit: Use solid colors except white (use pattern for white)
         if (level.max <= 50) {
-          // Good: White - use pattern for visibility
           color = {
             pattern: {
               image: 'https://usetrmnl.com/images/grayscale/gray-6.png',
@@ -243,11 +225,11 @@
             }
           };
         } else if (level.max <= 100) {
-          color = '#aaaaaa';  // Moderate: Light gray
+          color = '#aaaaaa';
         } else if (level.max <= 150) {
-          color = '#555555';  // Unhealthy for Sensitive: Dark gray
+          color = '#555555';
         } else {
-          color = '#000000';  // Unhealthy+: Black
+          color = '#000000';
         }
       }
 
@@ -281,7 +263,7 @@
         borderWidth: 0
       },
       center: ['50%', paneCenterY],
-      size: isCompact ? gaugeSize : '85%' // Smaller so labels fit in viewport
+      size: isCompact ? gaugeSize : '85%'
     },
     plotOptions: {
       gauge: {
@@ -309,7 +291,7 @@
       minorTickInterval: 0,
       tickInterval: 50,
       tickPositions: tickPositions,
-      tickColor: "transparent", // Hide tick marks
+      tickColor: "transparent",
       tickLength: isCompact ? 0 : 8,
       tickWidth: isCompact ? 0 : 1,
       lineWidth: 0,
@@ -377,11 +359,9 @@
         const tx = centerX + dx;
         const ty = centerY + dy;
 
-        // Calculate exact integer positions
         const x = Math.round((dx + 1) * config.tileSize);
         const y = Math.round((dy + 1) * config.tileSize);
 
-        // Create rectangle at exact integer boundaries
         const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
         rect.setAttribute('x', x);
         rect.setAttribute('y', y);
@@ -391,7 +371,6 @@
         rect.setAttribute('shape-rendering', 'crispEdges');
         mapLayers.appendChild(rect);
 
-        // Create pattern definition
         const pattern = document.createElementNS('http://www.w3.org/2000/svg', 'pattern');
         pattern.setAttribute('id', 'tile_' + tx + '_' + ty);
         pattern.setAttribute('patternUnits', 'userSpaceOnUse');
@@ -424,7 +403,7 @@
           pos.y >= -20 && pos.y <= config.viewHeight + 20) {
 
         const fillColor = getAQIColor(station.aqi);
-        const strokeColor = getStrokeColor(station.aqi);
+        const strokeColor = "#555555"
         const textColor = getTextColor(station.aqi);
 
         const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
