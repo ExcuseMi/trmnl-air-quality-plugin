@@ -1,13 +1,12 @@
-import os
-import asyncio
-import aiosqlite
-import httpx
-import time
 import json
 import logging
-from datetime import datetime, timedelta
-from flask import Flask, request, jsonify, send_file
 import math
+import os
+from datetime import datetime, timedelta
+
+import aiosqlite
+import httpx
+from flask import Flask, request, jsonify
 
 # Configure logging
 logging.basicConfig(
@@ -34,7 +33,7 @@ def get_translations(locale):
 # Configuration
 AQICN_API_KEY = os.getenv('AQICN_API_KEY')
 OPENWEATHER_API_KEY = os.getenv('OPENWEATHER_API_KEY')
-CACHE_HOURS = 1
+CACHE_MINUTES = 15
 DB_PATH = '/data/aqi_cache.db'
 ENABLE_IP_WHITELIST = os.getenv('ENABLE_IP_WHITELIST', 'false').lower() == 'true'
 
@@ -237,13 +236,13 @@ async def fetch_openweather_forecast(lat, lon):
         if row:
             forecast_json, cached_at = row
             cached_time = datetime.fromisoformat(cached_at)
-            age = (datetime.now() - cached_time).total_seconds() / 3600
+            age = (datetime.now() - cached_time).total_seconds() / 60  # age in minutes
 
-            if age < 24:  # 24 hour cache
-                logger.info(f"Forecast cache hit for ({lat_rounded}, {lon_rounded}), age: {age:.1f}h")
+            if age < 1440:  # 24 hour cache (1440 minutes)
+                logger.info(f"Forecast cache hit for ({lat_rounded}, {lon_rounded}), age: {age:.1f}m")
                 return json.loads(forecast_json)
             else:
-                logger.info(f"Forecast cache expired for ({lat_rounded}, {lon_rounded}), age: {age:.1f}h")
+                logger.info(f"Forecast cache expired for ({lat_rounded}, {lon_rounded}), age: {age:.1f}m")
 
     # Fetch from API
     url = f"http://api.openweathermap.org/data/2.5/air_pollution/forecast"
@@ -421,7 +420,7 @@ async def fetch_nearby_stations(lat, lon, zoom=9):
     lat_rounded = round(lat, 2)
     lon_rounded = round(lon, 2)
 
-    # Check cache first (1 hour TTL)
+    # Check cache first (15 minute TTL for fresh data)
     async with aiosqlite.connect(DB_PATH) as db:
         cursor = await db.execute(
             'SELECT stations_json, cached_at FROM stations_cache WHERE lat = ? AND lon = ? AND zoom = ?',
@@ -432,13 +431,13 @@ async def fetch_nearby_stations(lat, lon, zoom=9):
         if row:
             stations_json, cached_at = row
             cached_time = datetime.fromisoformat(cached_at)
-            age = (datetime.now() - cached_time).total_seconds() / 3600
+            age = (datetime.now() - cached_time).total_seconds() / 60  # age in minutes
 
-            if age < 1:  # 1 hour cache
-                logger.info(f"Stations cache hit for ({lat_rounded}, {lon_rounded}, zoom {zoom}), age: {age:.1f}h")
+            if age < 15:  # 15 minute cache
+                logger.info(f"Stations cache hit for ({lat_rounded}, {lon_rounded}, zoom {zoom}), age: {age:.1f}m")
                 return json.loads(stations_json)
             else:
-                logger.info(f"Stations cache expired for ({lat_rounded}, {lon_rounded}, zoom {zoom}), age: {age:.1f}h")
+                logger.info(f"Stations cache expired for ({lat_rounded}, {lon_rounded}, zoom {zoom}), age: {age:.1f}m")
 
     # Calculate tile coordinates
     center_x, center_y = lat_lon_to_tile(lat, lon, zoom)
@@ -512,7 +511,7 @@ async def get_cached_aqi(lat, lon):
     async with aiosqlite.connect(DB_PATH) as db:
         cursor = await db.execute(
             'SELECT * FROM aqi_cache WHERE lat = ? AND lon = ? AND fetched_at > ?',
-            (lat, lon, datetime.now() - timedelta(hours=CACHE_HOURS))
+            (lat, lon, datetime.now() - timedelta(minutes=CACHE_MINUTES))
         )
         row = await cursor.fetchone()
         if row:
@@ -730,7 +729,7 @@ async def startup():
 
     logger.info("Starting TRMNL AQI Plugin...")
     logger.info(f"AQICN API Key: {'*' * 10}{AQICN_API_KEY[-4:] if AQICN_API_KEY else 'NOT SET'}")
-    logger.info(f"Cache duration: {CACHE_HOURS} hours")
+    logger.info(f"Cache duration: {CACHE_MINUTES} minutes")
     logger.info(f"IP Whitelist enabled: {ENABLE_IP_WHITELIST}")
 
     # Initialize database
