@@ -57,12 +57,20 @@ def check_ip_whitelist():
     if not ENABLE_IP_WHITELIST:
         return True
 
-    # Get client IP (handle proxy headers)
-    client_ip = request.headers.get('X-Forwarded-For', request.remote_addr)
-    if client_ip:
+    # Get client IP - Cloudflare Tunnel uses CF-Connecting-IP
+    # Priority: CF-Connecting-IP > X-Forwarded-For > X-Real-IP > remote_addr
+    client_ip = (
+            request.headers.get('CF-Connecting-IP') or
+            request.headers.get('X-Forwarded-For') or
+            request.headers.get('X-Real-IP') or
+            request.remote_addr
+    )
+
+    if client_ip and ',' in client_ip:
         # X-Forwarded-For can contain multiple IPs, get the first one
         client_ip = client_ip.split(',')[0].strip()
 
+    logger.info(f"Checking IP whitelist - Client IP: {client_ip}")
     return client_ip in TRMNL_IPS
 
 
@@ -71,7 +79,16 @@ def require_trmnl_ip(f):
 
     async def decorated_function(*args, **kwargs):
         if not check_ip_whitelist():
-            client_ip = request.headers.get('X-Forwarded-For', request.remote_addr)
+            client_ip = (
+                    request.headers.get('CF-Connecting-IP') or
+                    request.headers.get('X-Forwarded-For') or
+                    request.headers.get('X-Real-IP') or
+                    request.remote_addr
+            )
+            if client_ip and ',' in client_ip:
+                client_ip = client_ip.split(',')[0].strip()
+
+            logger.info(f"Access denied for IP: {client_ip}")
             return jsonify({
                 'error': 'Access denied',
                 'message': 'This API is restricted to TRMNL servers only',
