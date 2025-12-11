@@ -12,7 +12,7 @@ custom_fields:
 - keyname: author_info
   name: About This Plugin
   field_type: author_bio
-  description: Monitor air quality in real-time with detailed AQI readings, maps, and 24-hour forecasts.<br /><strong>API will refresh once per hour!</strong>
+  description: Monitor air quality in real-time with detailed AQI readings from stations around you and 24-hour forecasts.
   github_url: https://github.com/ExcuseMi/trmnl-air-quality-plugin
   learn_more_url: https://aqicn.org
   category: environment
@@ -25,4 +25,4 @@ custom_fields:
   placeholder: Brussels, Belgium
   default: Brussels, Belgium
 name: Air Quality
-refresh_interval: 60
+refresh_interval: 15

@@ -57,7 +57,7 @@
     {% if aqi_response.forecast %}
     <div class="divider"></div>
     <div class="description mt--1">
-      <strong>{% if t %}{{ t.tomorrow }}{% else %}Tomorrow{% endif %}:</strong> {% if t %}{{ t.aqi_label }}{% else %}AQI{% endif %} {{ aqi_response.forecast.aqi }}
+      <strong>{% if t %}{{ t.tomorrow }}{% else %}Tomorrow{% endif %}:</strong> {{ aqi_response.forecast.aqi }} {% if t %}{{ t.aqi_label }}{% else %}AQI{% endif %}
     </div>
     {% endif %}
     {% endunless %}
@@ -65,9 +65,8 @@
 </div>
 
 <div class="title_bar">
-        <span class="material-symbols-outlined">air</span>
-
-  <span class="title">{{ aqi_response.health_advice: default:t.air_quality | default: "Air Quality" }}</span>
+  <span class="material-symbols-outlined" id="aqi-status-icon"></span>
+  <span class="title">{{ aqi_response.health_advice | default: t.air_quality | default: "Air Quality" }}</span>
   <span class="instance">{{ aqi_response.city }}</span>
 </div>
 <script>
@@ -151,6 +150,16 @@
       'so2': 'factory'
     };
     return icons[pollutant] || 'monitoring';
+  }
+
+  // AQI Status icon (for title bar)
+  function getAQIStatusIcon(aqi) {
+    if (aqi <= 50) return 'check_circle';           // Good: Check mark
+    if (aqi <= 100) return 'sentiment_neutral';     // Moderate: Neutral face
+    if (aqi <= 150) return 'warning';               // Unhealthy for Sensitive: Warning
+    if (aqi <= 200) return 'error';                 // Unhealthy: Error
+    if (aqi <= 300) return 'dangerous';             // Very Unhealthy: Dangerous
+    return 'emergency';                             // Hazardous: Emergency
   }
 
   function getPatternForAQI(aqi) {
@@ -342,12 +351,20 @@
   }
 
   function setIcons() {
+    // Set pollutant icon (in info box)
     if (!{% if compact %}true{% else %}false{% endif %}) {
       const pollutantIcon = getPollutantIcon(data.dominentpol);
       const pollutantIconElement = document.getElementById('pollutant-icon');
       if (pollutantIconElement) {
         pollutantIconElement.textContent = pollutantIcon;
       }
+    }
+    
+    // Set AQI status icon (in title bar)
+    const statusIcon = getAQIStatusIcon(data.aqi);
+    const statusIconElement = document.getElementById('aqi-status-icon');
+    if (statusIconElement) {
+      statusIconElement.textContent = statusIcon;
     }
   }
 
