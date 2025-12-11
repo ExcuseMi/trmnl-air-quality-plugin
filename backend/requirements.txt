@@ -1,6 +1,5 @@
-flask[async]
-httpx
-pillow
-python-dotenv
-gunicorn
-aiosqlite
+flask[async]==3.1.2
+httpx==0.28.1
+gunicorn==23.0.0
+aiosqlite==0.21.0
+APScheduler==3.11.1

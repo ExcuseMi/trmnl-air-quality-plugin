@@ -2,11 +2,11 @@ import os
 import asyncio
 import aiosqlite
 import httpx
-import time
 import json
 import logging
 from datetime import datetime, timedelta
 from flask import Flask, request, jsonify, send_file
+from apscheduler.schedulers.background import BackgroundScheduler
 import math
 
 # Configure logging
@@ -37,9 +37,12 @@ OPENWEATHER_API_KEY = os.getenv('OPENWEATHER_API_KEY')
 CACHE_MINUTES = 15
 DB_PATH = '/data/aqi_cache.db'
 ENABLE_IP_WHITELIST = os.getenv('ENABLE_IP_WHITELIST', 'false').lower() == 'true'
+IP_REFRESH_HOURS = 24  # Refresh IPs every 24 hours
 
 # TRMNL server IPs (fetched from https://usetrmnl.com/api/ips on startup)
 TRMNL_IPS = set()
+last_ip_refresh = None
+scheduler = None
 
 # Ensure directories exist
 os.makedirs(os.path.dirname(DB_PATH), exist_ok=True)
@@ -63,9 +66,50 @@ async def fetch_trmnl_ips():
             logger.info(f"Whitelisted IPs: {sorted(list(ips))}")
             return ips
     except Exception as e:
-        logger.info(f"Warning: Failed to fetch TRMNL IPs: {e}")
+        logger.error(f"Warning: Failed to fetch TRMNL IPs: {e}")
         logger.info("IP whitelist will not work until IPs are loaded")
         return set()
+
+
+def update_trmnl_ips_sync():
+    """Update TRMNL IPs - sync wrapper for scheduler"""
+    global TRMNL_IPS, last_ip_refresh
+
+    try:
+        logger.info("Starting scheduled TRMNL IP refresh...")
+        # Run async function in new event loop
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        try:
+            ips = loop.run_until_complete(fetch_trmnl_ips())
+            TRMNL_IPS = ips
+            last_ip_refresh = datetime.now()
+            logger.info(f"TRMNL IPs updated successfully at {last_ip_refresh.isoformat()}")
+        finally:
+            loop.close()
+    except Exception as e:
+        logger.error(f"Error updating TRMNL IPs: {e}")
+
+
+def start_ip_refresh_scheduler():
+    """Start background scheduler for IP refresh"""
+    global scheduler
+
+    if not ENABLE_IP_WHITELIST:
+        logger.info("IP whitelist disabled, skipping refresh scheduler")
+        return
+
+    scheduler = BackgroundScheduler(daemon=True)
+    scheduler.add_job(
+        func=update_trmnl_ips_sync,
+        trigger='interval',
+        hours=IP_REFRESH_HOURS,
+        id='ip_refresh',
+        name='TRMNL IP Refresh',
+        replace_existing=True
+    )
+    scheduler.start()
+    logger.info(f"Started IP refresh scheduler (refresh every {IP_REFRESH_HOURS} hours)")
 
 
 def check_ip_whitelist():
@@ -669,7 +713,20 @@ async def fetch_aqi_data(lat, lon, zoom=9, locale='en'):
 @app.route('/health')
 def health():
     """Health check endpoint"""
-    return jsonify({'status': 'healthy', 'timestamp': datetime.now().isoformat()})
+    health_data = {
+        'status': 'healthy',
+        'timestamp': datetime.now().isoformat()
+    }
+
+    # Add IP whitelist status if enabled
+    if ENABLE_IP_WHITELIST:
+        health_data['ip_whitelist'] = {
+            'enabled': True,
+            'ips_loaded': len(TRMNL_IPS),
+            'last_refresh': last_ip_refresh.isoformat() if last_ip_refresh else None
+        }
+
+    return jsonify(health_data)
 
 
 @app.route('/api/aqi')
@@ -761,11 +818,13 @@ async def startup():
     # Fetch TRMNL IPs if whitelist is enabled
     if ENABLE_IP_WHITELIST:
         TRMNL_IPS = await fetch_trmnl_ips()
+        global last_ip_refresh
+        last_ip_refresh = datetime.now()
+        # Start scheduler for periodic refresh
+        start_ip_refresh_scheduler()
 
 
 # Run startup in event loop
-import asyncio
-
 asyncio.run(startup())
 
 if __name__ == '__main__':
