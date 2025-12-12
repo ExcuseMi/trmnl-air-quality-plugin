@@ -12,7 +12,7 @@ custom_fields:
 - keyname: author_info
   name: About This Plugin
   field_type: author_bio
-  description: Monitor air quality in real-time with detailed AQI readings from stations around you and 24-hour forecasts.
+  description: 'Monitor air quality in real-time with detailed AQI readings from stations around you and 24-hour forecasts.<br /> Map data: <a href=''https://www.openstreetmap.org''>OpenStreetMap</a> & CartoDB.<br /> Air quality data from AQICN/WAQI.'
   github_url: https://github.com/ExcuseMi/trmnl-air-quality-plugin
   learn_more_url: https://aqicn.org
   category: environment
@@ -24,5 +24,15 @@ custom_fields:
   help_text: Enter any address, city name, or landmark.
   placeholder: Brussels, Belgium
   default: Brussels, Belgium
+- keyname: map_style
+  optional: true
+  field_type: select
+  name: Map Style
+  description: Choose the background map style
+  help_text: OpenStreetMap shows more detail. CartoDB is cleaner. Dark mode always uses CartoDB Dark Matter.
+  default: openstreetmap
+  options:
+  - OpenStreetMap (Detailed): openstreetmap
+  - CartoDB (Clean): cartodb
 name: Air Quality
-refresh_interval: 15
+refresh_interval: 1440

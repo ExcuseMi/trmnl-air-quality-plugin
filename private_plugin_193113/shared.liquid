@@ -20,6 +20,8 @@
 <script src="https://usetrmnl.com/js/highcharts/12.3.0/pattern-fill.js"></script>
 
 {% template main %}
+{% assign map_style = trmnl.plugin_settings.custom_fields_values.map_style | default: "openstreetmap" %}
+
 {% if aqi_response == blank or aqi_response.error %}
 <div class="layout">
   <div class="description">{{ aqi_response.message | default: t.no_data | default: "No data" }}</div>
@@ -399,8 +401,24 @@
         pattern.setAttribute('height', config.tileSize);
 
         const image = document.createElementNS('http://www.w3.org/2000/svg', 'image');
-        image.setAttributeNS('http://www.w3.org/1999/xlink', 'href',
-                             `https://tile.openstreetmap.org/${config.zoom}/${tx}/${ty}.png`);
+        
+        // Map tile URL - use Dark Matter in dark mode, otherwise respect map_style
+        const mapStyle = '{{ map_style | default: "openstreetmap" }}';
+        const darkMode = '{{ trmnl.plugin_settings.dark_mode }}' === 'yes';
+        let tileUrl;
+        
+        if (darkMode) {
+          // Always use CartoDB Dark Matter in dark mode
+          tileUrl = `https://a.basemaps.cartocdn.com/dark_all/${config.zoom}/${tx}/${ty}.png`;
+        } else if (mapStyle === 'cartodb') {
+          // CartoDB Positron in light mode
+          tileUrl = `https://a.basemaps.cartocdn.com/light_all/${config.zoom}/${tx}/${ty}.png`;
+        } else {
+          // OpenStreetMap in light mode
+          tileUrl = `https://tile.openstreetmap.org/${config.zoom}/${tx}/${ty}.png`;
+        }
+        
+        image.setAttributeNS('http://www.w3.org/1999/xlink', 'href', tileUrl);
         image.setAttribute('width', config.tileSize);
         image.setAttribute('height', config.tileSize);
         image.setAttribute('preserveAspectRatio', 'none');
