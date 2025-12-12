@@ -38,7 +38,6 @@ OPENWEATHER_API_KEY = os.getenv('OPENWEATHER_API_KEY')
 CACHE_MINUTES = 15
 DB_PATH = '/data/aqi_cache.db'
 ENABLE_IP_WHITELIST = os.getenv('ENABLE_IP_WHITELIST', 'false').lower() == 'true'
-IP_REFRESH_HOURS = 24  # Refresh IPs every 24 hours
 
 # TRMNL server IPs (fetched from https://usetrmnl.com/api/ips on startup)
 TRMNL_IPS = set()
@@ -220,6 +219,19 @@ async def init_db():
                 PRIMARY KEY (lat, lon)
             )
         ''')
+
+        # Add temperature and wind_speed columns if they don't exist (migration)
+        try:
+            await db.execute('ALTER TABLE aqi_cache ADD COLUMN temperature REAL')
+            logger.info("Added temperature column to aqi_cache")
+        except Exception:
+            pass  # Column already exists
+
+        try:
+            await db.execute('ALTER TABLE aqi_cache ADD COLUMN wind_speed REAL')
+            logger.info("Added wind_speed column to aqi_cache")
+        except Exception:
+            pass  # Column already exists
 
         # Geocoding cache table
         await db.execute('''
@@ -584,7 +596,9 @@ async def get_cached_aqi(lat, lon):
                 'health_advice': get_health_advice(aqi),
                 'pm25': row[6],
                 'pm10': row[7],
-                'fetched_at': row[9]
+                'temperature': row[8],
+                'wind_speed': row[9],
+                'fetched_at': row[11]
             }
         logger.info(f"Cache miss for {lat},{lon}")
         return None
@@ -600,8 +614,8 @@ async def cache_aqi(lat, lon, aqi_data):
 
         await db.execute(
             '''INSERT OR REPLACE INTO aqi_cache 
-               (lat, lon, aqi, dominentpol, city_name, status, pm25, pm10, data_json, fetched_at)
-               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''',
+               (lat, lon, aqi, dominentpol, city_name, status, pm25, pm10, temperature, wind_speed, data_json, fetched_at)
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''',
             (
                 lat, lon,
                 aqi_data.get('aqi'),
@@ -610,6 +624,8 @@ async def cache_aqi(lat, lon, aqi_data):
                 aqi_data.get('status'),
                 aqi_data.get('pm25'),
                 aqi_data.get('pm10'),
+                aqi_data.get('temperature'),
+                aqi_data.get('wind_speed'),
                 str(aqi_data),
                 datetime.now()
             )
@@ -793,11 +809,22 @@ async def get_aqi():
     if not aqi_data:
         return jsonify({'error': 'Failed to fetch AQI data'}), 500
 
-    # Convert temperature if needed
+    # Add stations to AQI data
+    if stations and not isinstance(stations, Exception):
+        aqi_data['stations'] = stations
+
+    # Add forecast if available
+    if forecast:
+        aqi_data['forecast'] = forecast
+
+    # Add translations to response
+    aqi_data['translations'] = get_translations(locale)
+
+    # Convert temperature if needed (cache stores Celsius)
     if aqi_data.get('temperature') is not None and temp_unit == 'fahrenheit':
         aqi_data['temperature'] = round((aqi_data['temperature'] * 9 / 5) + 32, 1)
 
-    # Convert wind speed if needed (AQICN provides km/h)
+    # Convert wind speed if needed (cache stores km/h)
     if aqi_data.get('wind_speed') is not None:
         wind_kmh = aqi_data['wind_speed']
         if wind_unit == 'mph':
@@ -811,17 +838,6 @@ async def get_aqi():
     # Add units to response
     aqi_data['temp_unit'] = temp_unit
     aqi_data['wind_unit'] = wind_unit
-
-    # Add stations to AQI data
-    if stations and not isinstance(stations, Exception):
-        aqi_data['stations'] = stations
-
-    # Add forecast if available
-    if forecast:
-        aqi_data['forecast'] = forecast
-
-    # Add translations to response
-    aqi_data['translations'] = get_translations(locale)
 
     return jsonify(aqi_data)
 
