@@ -38,7 +38,7 @@ OPENWEATHER_API_KEY = os.getenv('OPENWEATHER_API_KEY')
 CACHE_MINUTES = 15
 DB_PATH = '/data/aqi_cache.db'
 ENABLE_IP_WHITELIST = os.getenv('ENABLE_IP_WHITELIST', 'false').lower() == 'true'
-IP_REFRESH_HOURS = 24  # Refresh IPs every 24 hours
+IP_REFRESH_HOURS = 24  # Refresh TRMNL IPs every 24 hours
 
 # TRMNL server IPs (fetched from https://usetrmnl.com/api/ips on startup)
 TRMNL_IPS = set()
@@ -585,6 +585,10 @@ async def get_cached_aqi(lat, lon):
             dominentpol = row[3]
             aqi = row[2]
 
+            # IMPORTANT: SQLite ALTER TABLE adds columns at the END
+            # Original columns: 0-9 (lat, lon, aqi, dominentpol, city_name, status, pm25, pm10, data_json, fetched_at)
+            # Added columns: 10 (temperature), 11 (wind_speed)
+
             return {
                 'lat': row[0],
                 'lon': row[1],
@@ -597,25 +601,27 @@ async def get_cached_aqi(lat, lon):
                 'health_advice': get_health_advice(aqi),
                 'pm25': row[6],
                 'pm10': row[7],
-                'temperature': row[8],
-                'wind_speed': row[9],
-                'fetched_at': row[11]
+                'temperature': row[10] if len(row) > 10 else None,  # Safe access
+                'wind_speed': row[11] if len(row) > 11 else None,  # Safe access
+                'fetched_at': row[9]
             }
         logger.info(f"Cache miss for {lat},{lon}")
         return None
 
 
 async def cache_aqi(lat, lon, aqi_data):
-    """Cache AQI data"""
+    """Cache AQI data - stores temperature in Celsius and wind in km/h"""
     async with aiosqlite.connect(DB_PATH) as db:
         # Reconstruct full city name for storage
         city_full = aqi_data.get('city')
         if aqi_data.get('country'):
             city_full = f"{aqi_data.get('city')}, {aqi_data.get('country')}"
 
+        # Column order matters when using ALTER TABLE to add columns
+        # New columns go at the end: ..., data_json, fetched_at, temperature, wind_speed
         await db.execute(
             '''INSERT OR REPLACE INTO aqi_cache 
-               (lat, lon, aqi, dominentpol, city_name, status, pm25, pm10, temperature, wind_speed, data_json, fetched_at)
+               (lat, lon, aqi, dominentpol, city_name, status, pm25, pm10, data_json, fetched_at, temperature, wind_speed)
                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''',
             (
                 lat, lon,
@@ -625,14 +631,15 @@ async def cache_aqi(lat, lon, aqi_data):
                 aqi_data.get('status'),
                 aqi_data.get('pm25'),
                 aqi_data.get('pm10'),
-                aqi_data.get('temperature'),
-                aqi_data.get('wind_speed'),
                 str(aqi_data),
-                datetime.now()
+                datetime.now(),
+                aqi_data.get('temperature'),  # Stored in Celsius
+                aqi_data.get('wind_speed')  # Stored in km/h
             )
         )
         await db.commit()
-        logger.info(f"Cached AQI data for {lat},{lon}")
+        logger.info(
+            f"Cached AQI data for {lat},{lon} (temp: {aqi_data.get('temperature')}°C, wind: {aqi_data.get('wind_speed')} km/h)")
 
 
 async def fetch_aqi_data(lat, lon, zoom=9, locale='en'):
@@ -689,7 +696,7 @@ async def fetch_aqi_data(lat, lon, zoom=9, locale='en'):
             pm25 = iaqi.get('pm25', {}).get('v')
             pm10 = iaqi.get('pm10', {}).get('v')
 
-            # Get temperature and wind speed from iaqi
+            # Get temperature and wind speed from iaqi (STORED in Celsius and km/h)
             temp_c = iaqi.get('t', {}).get('v')  # Temperature in Celsius
             wind_speed = iaqi.get('w', {}).get('v')  # Wind speed in km/h
 
@@ -708,8 +715,8 @@ async def fetch_aqi_data(lat, lon, zoom=9, locale='en'):
                 'health_advice': get_health_advice(aqi, locale),
                 'pm25': pm25,
                 'pm10': pm10,
-                'temperature': temp_c,
-                'wind_speed': wind_speed,
+                'temperature': temp_c,  # Store in Celsius
+                'wind_speed': wind_speed,  # Store in km/h
                 'tile_x': None,
                 'tile_y': None,
                 'zoom': zoom,
@@ -724,7 +731,7 @@ async def fetch_aqi_data(lat, lon, zoom=9, locale='en'):
             # Stations will be fetched separately (in parallel)
             result['stations'] = []
 
-            # Cache the result
+            # Cache the result (in Celsius and km/h)
             await cache_aqi(lat, lon, result)
 
             return result
