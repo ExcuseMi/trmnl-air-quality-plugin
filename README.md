@@ -75,16 +75,22 @@ MIT License - feel free to modify and distribute
 <!-- PLUGIN_STATS_START -->
 ## 🚀 TRMNL Plugin(s)
 
-*Last updated: 2025-12-11 06:22:50 UTC*
+*Last updated: 2025-12-12 06:22:13 UTC*
 
 
-## 🔒 Plugin ID: 193113
+## <img src="assets/plugin-images/193113_icon.png" alt="Air Quality icon" width="32"/> [Air Quality](https://usetrmnl.com/recipes/193113)
 
-**Status**: ⏳ Not yet published on TRMNL or API unavailable
+![Air Quality screenshot](assets/plugin-images/193113_screenshot.png)
 
-This plugin is configured but either hasn't been published to the TRMNL marketplace yet or the API is temporarily unavailable.
+### Description
+Monitor air quality in real-time with detailed AQI readings from stations around you and 24-hour forecasts.<br />Uses map data from <a href='https://openstreetmap.org'>Openstreetmap</a>.
 
-**Plugin URL**: https://usetrmnl.com/recipes/193113
+### 📊 Statistics
+
+| Metric | Value |
+|--------|-------|
+| Installs | 1 |
+| Forks | 9 |
 
 ---
 
