@@ -668,29 +668,28 @@ async def fetch_nearby_stations(lat, lon, zoom=9):
 
                     logger.info(f"Fetched {len(filtered_stations)} valid stations (filtered from {len(raw_stations)})")
 
-                    # Apply grid-based clustering only if we have too many stations
-                    max_stations = 12
-                    if len(filtered_stations) <= max_stations:
-                        # Already few enough stations - no clustering needed
-                        clustered_stations = filtered_stations
+                    # Apply grid-based clustering for better spatial distribution
+                    # This spreads out clustered stations but doesn't enforce a hard limit
+                    bounds = {
+                        'min_lat': se_lat,
+                        'max_lat': nw_lat,
+                        'min_lon': nw_lon,
+                        'max_lon': se_lon
+                    }
+
+                    # Use a higher grid size for better distribution without aggressive reduction
+                    clustered_stations = cluster_stations_grid(
+                        filtered_stations,
+                        bounds,
+                        max_stations=len(filtered_stations),  # No hard limit, just redistribute
+                        grid_size=4  # 4x4 grid for finer distribution
+                    )
+
+                    if len(clustered_stations) < len(filtered_stations):
                         logger.info(
-                            f"Skipping clustering - only {len(filtered_stations)} stations (max: {max_stations})")
+                            f"Redistributed {len(filtered_stations)} stations to {len(clustered_stations)} (removed overlaps)")
                     else:
-                        # Too many stations - apply spatial clustering
-                        bounds = {
-                            'min_lat': se_lat,
-                            'max_lat': nw_lat,
-                            'min_lon': nw_lon,
-                            'max_lon': se_lon
-                        }
-                        clustered_stations = cluster_stations_grid(
-                            filtered_stations,
-                            bounds,
-                            max_stations=max_stations,
-                            grid_size=3  # 3x3 grid
-                        )
-                        logger.info(
-                            f"Clustered {len(filtered_stations)} stations down to {len(clustered_stations)} for display")
+                        logger.info(f"Kept all {len(filtered_stations)} stations (good distribution)")
 
                     # Cache the result
                     async with aiosqlite.connect(DB_PATH) as db:
