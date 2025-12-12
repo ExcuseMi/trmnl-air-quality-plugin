@@ -38,6 +38,7 @@ OPENWEATHER_API_KEY = os.getenv('OPENWEATHER_API_KEY')
 CACHE_MINUTES = 15
 DB_PATH = '/data/aqi_cache.db'
 ENABLE_IP_WHITELIST = os.getenv('ENABLE_IP_WHITELIST', 'false').lower() == 'true'
+IP_REFRESH_HOURS = 24  # Refresh IPs every 24 hours
 
 # TRMNL server IPs (fetched from https://usetrmnl.com/api/ips on startup)
 TRMNL_IPS = set()
