@@ -32,6 +32,22 @@ def get_translations(locale):
     return TRANSLATIONS.get(lang, TRANSLATIONS['en'])
 
 
+def get_minimal_translations(locale):
+    """
+    Get only UI labels for translations (not data translations).
+    Data fields like status, health_advice, pollutant_name are already translated
+    in the response, so we only need to send UI labels here.
+    """
+    translations = get_translations(locale)
+    return {
+        'aqi_label': translations.get('aqi_label', 'AQI'),
+        'tomorrow': translations.get('tomorrow', 'Tomorrow'),
+        'air_quality': translations.get('air_quality', 'Air Quality'),
+        'no_data': translations.get('no_data', 'No data available'),
+        'error': translations.get('error', 'Error loading data')
+    }
+
+
 # Configuration
 AQICN_API_KEY = os.getenv('AQICN_API_KEY')
 OPENWEATHER_API_KEY = os.getenv('OPENWEATHER_API_KEY')
@@ -505,6 +521,84 @@ def tile_to_lat_lon(x, y, zoom):
     return lat, lon
 
 
+def cluster_stations_grid(stations, bounds, max_stations=12, grid_size=3):
+    """
+    Cluster stations using grid-based spatial distribution.
+    Divides the map into grid_size x grid_size cells and selects
+    the most representative station from each cell.
+
+    Args:
+        stations: List of station dicts with 'lat', 'lon', 'aqi'
+        bounds: Dict with 'min_lat', 'max_lat', 'min_lon', 'max_lon'
+        max_stations: Maximum number of stations to return
+        grid_size: Size of grid (3 = 3x3 = 9 cells)
+
+    Returns:
+        List of selected stations with good geographic distribution
+    """
+    if not stations:
+        return []
+
+    if len(stations) <= max_stations:
+        return stations
+
+    # Calculate grid cell dimensions
+    lat_range = bounds['max_lat'] - bounds['min_lat']
+    lon_range = bounds['max_lon'] - bounds['min_lon']
+    cell_lat = lat_range / grid_size
+    cell_lon = lon_range / grid_size
+
+    # Create grid: dict of (cell_y, cell_x) -> [stations]
+    grid = {}
+    for station in stations:
+        # Determine which cell this station belongs to
+        cell_y = int((station['lat'] - bounds['min_lat']) / cell_lat)
+        cell_x = int((station['lon'] - bounds['min_lon']) / cell_lon)
+
+        # Clamp to grid bounds
+        cell_y = max(0, min(grid_size - 1, cell_y))
+        cell_x = max(0, min(grid_size - 1, cell_x))
+
+        key = (cell_y, cell_x)
+        if key not in grid:
+            grid[key] = []
+        grid[key].append(station)
+
+    # Select best station from each cell
+    selected = []
+    for cell_stations in grid.values():
+        if cell_stations:
+            # Pick station with most extreme AQI (furthest from 50 = "good")
+            # This highlights both very good and very bad air quality
+            best = max(cell_stations, key=lambda s: abs(s['aqi'] - 50))
+            selected.append(best)
+
+    # Add extreme outliers that weren't selected (very bad or very good AQI)
+    selected_set = {(s['lat'], s['lon']) for s in selected}
+    for station in stations:
+        if (station['lat'], station['lon']) not in selected_set:
+            if station['aqi'] > 150 or station['aqi'] < 20:  # Extreme values
+                selected.append(station)
+                if len(selected) >= max_stations:
+                    break
+
+    # If we still need more stations, add closest to center
+    if len(selected) < max_stations:
+        center_lat = (bounds['min_lat'] + bounds['max_lat']) / 2
+        center_lon = (bounds['min_lon'] + bounds['max_lon']) / 2
+
+        remaining = [s for s in stations if (s['lat'], s['lon']) not in selected_set]
+        remaining.sort(key=lambda s: (s['lat'] - center_lat) ** 2 + (s['lon'] - center_lon) ** 2)
+
+        for station in remaining:
+            selected.append(station)
+            if len(selected) >= max_stations:
+                break
+
+    # Final limit
+    return selected[:max_stations]
+
+
 async def fetch_nearby_stations(lat, lon, zoom=9):
     """Fetch all AQI stations in the visible map area - cached for 1 hour"""
     # Round coordinates for cache key
@@ -574,18 +668,35 @@ async def fetch_nearby_stations(lat, lon, zoom=9):
 
                     logger.info(f"Fetched {len(filtered_stations)} valid stations (filtered from {len(raw_stations)})")
 
+                    # Apply grid-based clustering for better distribution
+                    bounds = {
+                        'min_lat': se_lat,
+                        'max_lat': nw_lat,
+                        'min_lon': nw_lon,
+                        'max_lon': se_lon
+                    }
+                    clustered_stations = cluster_stations_grid(
+                        filtered_stations,
+                        bounds,
+                        max_stations=12,  # Good for e-ink display
+                        grid_size=3  # 3x3 grid
+                    )
+
+                    logger.info(
+                        f"Clustered {len(filtered_stations)} stations down to {len(clustered_stations)} for display")
+
                     # Cache the result
                     async with aiosqlite.connect(DB_PATH) as db:
                         await db.execute(
                             '''INSERT OR REPLACE INTO stations_cache 
                                (lat, lon, zoom, stations_json, cached_at)
                                VALUES (?, ?, ?, ?, ?)''',
-                            (lat_rounded, lon_rounded, zoom, json.dumps(filtered_stations), datetime.now().isoformat())
+                            (lat_rounded, lon_rounded, zoom, json.dumps(clustered_stations), datetime.now().isoformat())
                         )
                         await db.commit()
 
                     logger.info(f"Cached stations for ({lat_rounded}, {lon_rounded}, zoom {zoom})")
-                    return filtered_stations
+                    return clustered_stations
                 else:
                     logger.info(f"API error: {data}")
                     return []
@@ -857,8 +968,8 @@ async def get_aqi():
     if forecast:
         aqi_data['forecast'] = forecast
 
-    # Add translations to response
-    aqi_data['translations'] = get_translations(locale)
+    # Add minimal translations (UI labels only, not data translations)
+    aqi_data['translations'] = get_minimal_translations(locale)
 
     # Convert temperature if needed (cache stores Celsius)
     if aqi_data.get('temperature') is not None and temp_unit == 'fahrenheit':
