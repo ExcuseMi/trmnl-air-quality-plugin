@@ -202,6 +202,38 @@ def get_health_advice(aqi, locale='en'):
         return translations['health_advice']['hazardous']
 
 
+def kmh_to_beaufort(kmh):
+    """Convert wind speed (km/h) to Beaufort scale (0-12)"""
+    if kmh is None:
+        return None
+    if kmh < 1:
+        return 0
+    elif kmh < 6:
+        return 1
+    elif kmh < 12:
+        return 2
+    elif kmh < 20:
+        return 3
+    elif kmh < 29:
+        return 4
+    elif kmh < 39:
+        return 5
+    elif kmh < 50:
+        return 6
+    elif kmh < 62:
+        return 7
+    elif kmh < 75:
+        return 8
+    elif kmh < 89:
+        return 9
+    elif kmh < 103:
+        return 10
+    elif kmh < 118:
+        return 11
+    else:
+        return 12
+
+
 async def init_db():
     """Initialize SQLite database"""
     async with aiosqlite.connect(DB_PATH) as db:
@@ -772,7 +804,7 @@ async def get_aqi():
       - zoom: tile zoom level (default: 9)
       - locale: language code (default: en, supports: en, fr, nl, de, es)
       - temp_unit: celsius or fahrenheit (default: celsius)
-      - wind_unit: kmh, mph, ms, or knots (default: kmh)
+      - wind_unit: kmh, mph, ms, knots, or beaufort (default: kmh)
     """
     lat = request.args.get('lat', type=float)
     lon = request.args.get('lon', type=float)
@@ -841,6 +873,8 @@ async def get_aqi():
             aqi_data['wind_speed'] = round(wind_kmh * 0.277778, 1)
         elif wind_unit == 'knots':
             aqi_data['wind_speed'] = round(wind_kmh * 0.539957, 1)
+        elif wind_unit == 'beaufort':
+            aqi_data['wind_speed'] = kmh_to_beaufort(wind_kmh)
         # else kmh - no conversion needed
 
     # Add units to response
