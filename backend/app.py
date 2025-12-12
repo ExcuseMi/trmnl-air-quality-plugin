@@ -748,6 +748,7 @@ async def get_aqi():
       - zoom: tile zoom level (default: 9)
       - locale: language code (default: en, supports: en, fr, nl, de, es)
       - temp_unit: celsius or fahrenheit (default: celsius)
+      - wind_unit: kmh, mph, ms, or knots (default: kmh)
     """
     lat = request.args.get('lat', type=float)
     lon = request.args.get('lon', type=float)
@@ -755,6 +756,7 @@ async def get_aqi():
     zoom = request.args.get('zoom', default=9, type=int)
     locale = request.args.get('locale', default='en', type=str)
     temp_unit = request.args.get('temp_unit', default='celsius', type=str)
+    wind_unit = request.args.get('wind_unit', default='kmh', type=str)
 
     # If address provided, geocode it
     if address:
@@ -795,8 +797,20 @@ async def get_aqi():
     if aqi_data.get('temperature') is not None and temp_unit == 'fahrenheit':
         aqi_data['temperature'] = round((aqi_data['temperature'] * 9 / 5) + 32, 1)
 
-    # Add temp_unit to response
+    # Convert wind speed if needed (AQICN provides km/h)
+    if aqi_data.get('wind_speed') is not None:
+        wind_kmh = aqi_data['wind_speed']
+        if wind_unit == 'mph':
+            aqi_data['wind_speed'] = round(wind_kmh * 0.621371, 1)
+        elif wind_unit == 'ms':
+            aqi_data['wind_speed'] = round(wind_kmh * 0.277778, 1)
+        elif wind_unit == 'knots':
+            aqi_data['wind_speed'] = round(wind_kmh * 0.539957, 1)
+        # else kmh - no conversion needed
+
+    # Add units to response
     aqi_data['temp_unit'] = temp_unit
+    aqi_data['wind_unit'] = wind_unit
 
     # Add stations to AQI data
     if stations and not isinstance(stations, Exception):
@@ -810,6 +824,7 @@ async def get_aqi():
     aqi_data['translations'] = get_translations(locale)
 
     return jsonify(aqi_data)
+
 
 def create_app():
     """Application factory"""
