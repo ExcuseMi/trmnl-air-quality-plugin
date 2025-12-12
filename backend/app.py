@@ -668,22 +668,29 @@ async def fetch_nearby_stations(lat, lon, zoom=9):
 
                     logger.info(f"Fetched {len(filtered_stations)} valid stations (filtered from {len(raw_stations)})")
 
-                    # Apply grid-based clustering for better distribution
-                    bounds = {
-                        'min_lat': se_lat,
-                        'max_lat': nw_lat,
-                        'min_lon': nw_lon,
-                        'max_lon': se_lon
-                    }
-                    clustered_stations = cluster_stations_grid(
-                        filtered_stations,
-                        bounds,
-                        max_stations=12,  # Good for e-ink display
-                        grid_size=3  # 3x3 grid
-                    )
-
-                    logger.info(
-                        f"Clustered {len(filtered_stations)} stations down to {len(clustered_stations)} for display")
+                    # Apply grid-based clustering only if we have too many stations
+                    max_stations = 12
+                    if len(filtered_stations) <= max_stations:
+                        # Already few enough stations - no clustering needed
+                        clustered_stations = filtered_stations
+                        logger.info(
+                            f"Skipping clustering - only {len(filtered_stations)} stations (max: {max_stations})")
+                    else:
+                        # Too many stations - apply spatial clustering
+                        bounds = {
+                            'min_lat': se_lat,
+                            'max_lat': nw_lat,
+                            'min_lon': nw_lon,
+                            'max_lon': se_lon
+                        }
+                        clustered_stations = cluster_stations_grid(
+                            filtered_stations,
+                            bounds,
+                            max_stations=max_stations,
+                            grid_size=3  # 3x3 grid
+                        )
+                        logger.info(
+                            f"Clustered {len(filtered_stations)} stations down to {len(clustered_stations)} for display")
 
                     # Cache the result
                     async with aiosqlite.connect(DB_PATH) as db:
