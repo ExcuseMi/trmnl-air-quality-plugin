@@ -20,8 +20,6 @@
 <script src="https://usetrmnl.com/js/highcharts/12.3.0/pattern-fill.js"></script>
 
 {% template main %}
-{% assign map_style = trmnl.plugin_settings.custom_fields_values.map_style | default: "openstreetmap" %}
-
 {% if aqi_response == blank or aqi_response.error %}
 <div class="layout">
   <div class="description">{{ aqi_response.message | default: t.no_data | default: "No data" }}</div>
@@ -56,6 +54,22 @@
       <div class="description">{{ aqi_response.pollutant_name }}</div>
       {% endif %}
     </div>
+    {% if aqi_response.temperature or aqi_response.wind_speed %}
+    <div class="flex flex--row gap--small">
+      {% if aqi_response.temperature %}
+      <div class="flex flex--row gap--xsmall">
+        <span class="material-symbols-outlined">thermostat</span>
+        <div class="description">{{ aqi_response.temperature | round }}°{% if aqi_response.temp_unit == "fahrenheit" %}F{% else %}C{% endif %}</div>
+      </div>
+      {% endif %}
+      {% if aqi_response.wind_speed %}
+      <div class="flex flex--row gap--xsmall">
+        <span class="material-symbols-outlined">air</span>
+        <div class="description">{{ aqi_response.wind_speed | round }} km/h</div>
+      </div>
+      {% endif %}
+    </div>
+    {% endif %}
     {% if aqi_response.forecast %}
     <div class="divider"></div>
     <div class="description mt--1">
@@ -361,7 +375,7 @@
         pollutantIconElement.textContent = pollutantIcon;
       }
     }
-    
+
     // Set AQI status icon (in title bar)
     const statusIcon = getAQIStatusIcon(data.aqi);
     const statusIconElement = document.getElementById('aqi-status-icon');
@@ -401,12 +415,12 @@
         pattern.setAttribute('height', config.tileSize);
 
         const image = document.createElementNS('http://www.w3.org/2000/svg', 'image');
-        
+
         // Map tile URL - use Dark Matter in dark mode, otherwise respect map_style
         const mapStyle = '{{ map_style | default: "openstreetmap" }}';
         const darkMode = '{{ trmnl.plugin_settings.dark_mode }}' === 'yes';
         let tileUrl;
-        
+
         if (darkMode) {
           // Always use CartoDB Dark Matter in dark mode
           tileUrl = `https://a.basemaps.cartocdn.com/dark_all/${config.zoom}/${tx}/${ty}.png`;
@@ -417,7 +431,7 @@
           // OpenStreetMap in light mode
           tileUrl = `https://tile.openstreetmap.org/${config.zoom}/${tx}/${ty}.png`;
         }
-        
+
         image.setAttributeNS('http://www.w3.org/1999/xlink', 'href', tileUrl);
         image.setAttribute('width', config.tileSize);
         image.setAttribute('height', config.tileSize);
@@ -436,7 +450,7 @@
     stations.forEach(station => {
       const pos = latLonToPixels(station.lat, station.lon);
 
-      if (pos.x >= -20 && pos.x <= config.viewWidth + 20 && 
+      if (pos.x >= -20 && pos.x <= config.viewWidth + 20 &&
           pos.y >= -20 && pos.y <= config.viewHeight + 20) {
 
         const fillColor = getAQIColor(station.aqi);
@@ -470,39 +484,4 @@
   }
 
   function renderLocationMarker() {
-    const markerGroup = document.getElementById('location-marker');
-    const pos = latLonToPixels(config.centerLat, config.centerLon);
-
-    const outerCircle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-    outerCircle.setAttribute('cx', pos.x);
-    outerCircle.setAttribute('cy', pos.y);
-    outerCircle.setAttribute('r', 15);
-    outerCircle.setAttribute('fill', 'white');
-    outerCircle.setAttribute('stroke', 'black');
-    outerCircle.setAttribute('stroke-width', 3);
-    markerGroup.appendChild(outerCircle);
-
-    const innerCircle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-    innerCircle.setAttribute('cx', pos.x);
-    innerCircle.setAttribute('cy', pos.y);
-    innerCircle.setAttribute('r', 6);
-    innerCircle.setAttribute('fill', 'black');
-    markerGroup.appendChild(innerCircle);
-  }
-
-  function init() { 
-    renderMapTiles();
-    renderLocationMarker();
-    renderStations();
-    setIcons();
-    createAQIGauge(data.aqi);
-  }
-
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', init);
-  } else {
-    init();
-  }
-</script>
-{% endif %}
-{% endtemplate %}
+    const markerGroup

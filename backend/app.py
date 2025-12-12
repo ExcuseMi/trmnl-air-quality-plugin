@@ -2,6 +2,7 @@ import os
 import asyncio
 import aiosqlite
 import httpx
+import time
 import json
 import logging
 from datetime import datetime, timedelta
@@ -671,6 +672,10 @@ async def fetch_aqi_data(lat, lon, zoom=9, locale='en'):
             pm25 = iaqi.get('pm25', {}).get('v')
             pm10 = iaqi.get('pm10', {}).get('v')
 
+            # Get temperature and wind speed from iaqi
+            temp_c = iaqi.get('t', {}).get('v')  # Temperature in Celsius
+            wind_speed = iaqi.get('w', {}).get('v')  # Wind speed in km/h
+
             # Get dominant pollutant
             dominentpol = aqi_info.get('dominentpol', 'N/A')
 
@@ -686,6 +691,8 @@ async def fetch_aqi_data(lat, lon, zoom=9, locale='en'):
                 'health_advice': get_health_advice(aqi, locale),
                 'pm25': pm25,
                 'pm10': pm10,
+                'temperature': temp_c,
+                'wind_speed': wind_speed,
                 'tile_x': None,
                 'tile_y': None,
                 'zoom': zoom,
@@ -740,12 +747,14 @@ async def get_aqi():
       - address: location address (optional if lat/lon provided)
       - zoom: tile zoom level (default: 9)
       - locale: language code (default: en, supports: en, fr, nl, de, es)
+      - temp_unit: celsius or fahrenheit (default: celsius)
     """
     lat = request.args.get('lat', type=float)
     lon = request.args.get('lon', type=float)
     address = request.args.get('address', type=str)
     zoom = request.args.get('zoom', default=9, type=int)
     locale = request.args.get('locale', default='en', type=str)
+    temp_unit = request.args.get('temp_unit', default='celsius', type=str)
 
     # If address provided, geocode it
     if address:
@@ -782,6 +791,13 @@ async def get_aqi():
     if not aqi_data:
         return jsonify({'error': 'Failed to fetch AQI data'}), 500
 
+    # Convert temperature if needed
+    if aqi_data.get('temperature') is not None and temp_unit == 'fahrenheit':
+        aqi_data['temperature'] = round((aqi_data['temperature'] * 9 / 5) + 32, 1)
+
+    # Add temp_unit to response
+    aqi_data['temp_unit'] = temp_unit
+
     # Add stations to AQI data
     if stations and not isinstance(stations, Exception):
         aqi_data['stations'] = stations
@@ -794,7 +810,6 @@ async def get_aqi():
     aqi_data['translations'] = get_translations(locale)
 
     return jsonify(aqi_data)
-
 
 def create_app():
     """Application factory"""
