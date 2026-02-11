@@ -15,9 +15,9 @@
 </style>
 
 <!-- import Highcharts libraries -->
-<script src="https://usetrmnl.com/js/highcharts/12.3.0/highcharts.js"></script>
-<script src="https://usetrmnl.com/js/highcharts/12.3.0/highcharts-more.js"></script>
-<script src="https://usetrmnl.com/js/highcharts/12.3.0/pattern-fill.js"></script>
+<script src="https://trmnl.com/js/highcharts/12.3.0/highcharts.js"></script>
+<script src="https://trmnl.com/js/highcharts/12.3.0/highcharts-more.js"></script>
+<script src="https://trmnl.com/js/highcharts/12.3.0/pattern-fill.js"></script>
 
 {% template main %}
 {% if aqi_response == blank or aqi_response.error %}
@@ -187,12 +187,12 @@
 
   function getPatternForAQI(aqi) {
       const patterns = [
-        { max: 50, image: 'https://usetrmnl.com/images/grayscale/gray-6.png' },  // Good: White
-        { max: 100, image: 'https://usetrmnl.com/images/grayscale/gray-5.png' }, // Moderate: Light gray
-        { max: 150, image: 'https://usetrmnl.com/images/grayscale/gray-2.png' }, // Unhealthy Sens: Dark gray
-        { max: 200, image: 'https://usetrmnl.com/images/grayscale/gray-1.png' }, // Unhealthy: Black
-        { max: 300, image: 'https://usetrmnl.com/images/grayscale/gray-1.png' }, // Very Unhealthy: Black
-        { max: 500, image: 'https://usetrmnl.com/images/grayscale/gray-1.png' }  // Hazardous: Black
+        { max: 50, image: 'https://trmnl.com/images/grayscale/gray-6.png' },  // Good: White
+        { max: 100, image: 'https://trmnl.com/images/grayscale/gray-5.png' }, // Moderate: Light gray
+        { max: 150, image: 'https://trmnl.com/images/grayscale/gray-2.png' }, // Unhealthy Sens: Dark gray
+        { max: 200, image: 'https://trmnl.com/images/grayscale/gray-1.png' }, // Unhealthy: Black
+        { max: 300, image: 'https://trmnl.com/images/grayscale/gray-1.png' }, // Very Unhealthy: Black
+        { max: 500, image: 'https://trmnl.com/images/grayscale/gray-1.png' }  // Hazardous: Black
       ];
 
       for (const pattern of patterns) {
@@ -200,7 +200,7 @@
           return pattern.image;
         }
       }
-      return 'https://usetrmnl.com/images/grayscale/gray-1.png';
+      return 'https://trmnl.com/images/grayscale/gray-1.png';
   }
 
   // Create AQI gauge - NO INTERNAL LABEL
@@ -253,7 +253,7 @@
         if (level.max <= 50) {
           color = {
             pattern: {
-              image: 'https://usetrmnl.com/images/grayscale/gray-6.png',
+              image: 'https://trmnl.com/images/grayscale/gray-6.png',
               width: 12,
               height: 12
             }
