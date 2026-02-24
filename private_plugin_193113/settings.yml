@@ -16,6 +16,7 @@ custom_fields:
   github_url: https://github.com/ExcuseMi/trmnl-air-quality-plugin
   learn_more_url: https://aqicn.org
   category: environment
+  help_text: TRMNL X Ready
 - keyname: address
   optional: false
   field_type: string
