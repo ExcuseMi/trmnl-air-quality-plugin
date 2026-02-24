@@ -89,8 +89,9 @@
 
 <div class="title_bar">
   <span class="material-symbols-outlined" id="aqi-status-icon"></span>
-  <span class="title">{{ aqi_response.health_advice | default: t.air_quality | default: "Air Quality" }}</span>
-  <span class="instance">{{ aqi_response.city }}</span>
+  <span class="title {% unless h_compact %}hidden lg:hidden{% endunless %}">{{ aqi_response.status" }}</span>
+  <span class="title {% if h_compact %}sm:hidden md:hidden{% endif%}">{{ aqi_response.health_advice | default: t.air_quality | default: "Air Quality" }}</span>
+  <span class="instance md:portrait:hidden lg:portrait:inline">{{ aqi_response.city }}</span>
 </div>
 <script>
   const data = {{ aqi_response | json }};
