@@ -40,9 +40,9 @@ custom_fields:
   description: Select your preferred temperature unit
   field_type: select
   options:
-  - Celcius
+  - Celsius
   - Fahrenheit
-  default: celcius
+  default: celsius
 - keyname: wind_unit
   name: Wind Speed Unit
   description: Select your preferred wind speed unit
