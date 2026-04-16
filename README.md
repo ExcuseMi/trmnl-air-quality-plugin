@@ -75,7 +75,7 @@ MIT License - feel free to modify and distribute
 <!-- PLUGIN_STATS_START -->
 ## 🚀 TRMNL Plugin(s)
 
-*Last updated: 2026-04-15 07:20:45 UTC*
+*Last updated: 2026-04-16 07:20:57 UTC*
 
 
 ## <img src="assets/plugin-images/193113_icon.png" alt="Air Quality icon" width="32"/> [Air Quality](https://usetrmnl.com/recipes/193113)
@@ -83,7 +83,7 @@ MIT License - feel free to modify and distribute
 ![Air Quality screenshot](assets/plugin-images/193113_screenshot.png)
 
 ### Description
-Monitor air quality in real-time with detailed AQI readings from stations around you and 24-hour forecasts.<br /> Map data: <a href='https://www.openstreetmap.org'>OpenStreetMap</a> & CartoDB.<br /> Air quality data from AQICN/WAQI.
+Monitor air quality in real-time with detailed AQI readings from stations around you and 24-hour forecasts.<br /> Map data: CartoDB.<br /> Air quality data from AQICN/WAQI.
 
 ### 📊 Statistics
 
