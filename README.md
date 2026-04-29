@@ -75,12 +75,12 @@ MIT License - feel free to modify and distribute
 <!-- PLUGIN_STATS_START -->
 ## 🚀 TRMNL Plugin(s)
 
-*Last updated: 2026-04-28 08:10:13 UTC*
+*Last updated: 2026-04-29 08:03:07 UTC*
 
 
 ## <img src="assets/plugin-images/193113_icon.png" alt="Air Quality icon" width="32"/> [Air Quality](https://usetrmnl.com/recipes/193113)
 
-![Air Quality screenshot](assets/plugin-images/193113_screenshot.png)
+![Air Quality screenshot](assets/plugin-images/193113_screenshot.bmp)
 
 ### Description
 Monitor air quality in real-time with detailed AQI readings from stations around you and 24-hour forecasts.<br /> Map data: CartoDB.<br /> Air quality data from AQICN/WAQI.
