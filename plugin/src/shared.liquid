@@ -20,9 +20,10 @@
 <script src="https://trmnl.com/js/highcharts/12.3.0/pattern-fill.js"></script>
 
 {% template main %}
+
 {% if aqi_response == blank or aqi_response.error %}
 <div class="layout">
-  <div class="description lg:description--large">{{ aqi_response.message | default: t.no_data | default: "No data" }}</div>
+  <div class="description lg:description--large">{{ aqi_response.error | default: t.no_data | default: "No data" }}</div>
 </div>
 <div class="title_bar">
   <span class="title">{% if t %}{{ t.air_quality | default: "Air Quality" }}{% else %}Air Quality{% endif %}</span>
@@ -424,13 +425,12 @@
 
         const image = document.createElementNS('http://www.w3.org/2000/svg', 'image');
         
-        // Map tile URL - CartoDB only (OSM requires Referer header)
-        const mapStyle = '{{ map_style | default: "cartodb" }}';
-        const darkMode = '{{ trmnl.plugin_settings.dark_mode }}' === 'yes';
-        const useDark = darkMode || mapStyle === 'cartodb_dark';
-        const tileUrl = useDark
-          ? `https://a.basemaps.cartocdn.com/dark_all/${config.zoom}/${tx}/${ty}.png`
-          : `https://a.basemaps.cartocdn.com/light_all/${config.zoom}/${tx}/${ty}.png`;
+        var tileStyle = '{{ trmnl.plugin_settings.custom_fields_values.tile_style | default: "cartodb_light" }}';
+        var stadiaKey = '{{ trmnl.plugin_settings.custom_fields_values.stadia_api_key }}';
+        const tileUrl = tileStyle === 'cartodb_dark' || tileStyle === 'cartodb_light'
+          ? ('https://a.basemaps.cartocdn.com/' + (tileStyle === 'cartodb_dark' ? 'dark_all' : 'light_all') + '/' + config.zoom + '/' + tx + '/' + ty + '.png')
+          : ('https://tiles.stadiamaps.com/tiles/' + tileStyle + '/' + config.zoom + '/' + tx + '/' + ty + '.png'
+              + (stadiaKey ? '?api_key=' + stadiaKey : ''));
         
         image.setAttributeNS('http://www.w3.org/1999/xlink', 'href', tileUrl);
         image.setAttribute('width', config.tileSize);
