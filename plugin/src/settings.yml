@@ -51,6 +51,27 @@ custom_fields:
   - when: cartodb_light
     hidden:
     - stadia_api_key
+  - when: stamen_toner
+    required:
+    - stadia_api_key
+  - when: stamen_toner_lite
+    required:
+    - stadia_api_key
+  - when: stamen_toner_dark
+    required:
+    - stadia_api_key
+  - when: stamen_toner_blacklite
+    required:
+    - stadia_api_key
+  - when: stamen_toner_background
+    required:
+    - stadia_api_key
+  - when: stamen_terrain
+    required:
+    - stadia_api_key
+  - when: stamen_watercolor
+    required:
+    - stadia_api_key
 - keyname: stadia_api_key
   field_type: password
   name: Stadia Maps API Key
