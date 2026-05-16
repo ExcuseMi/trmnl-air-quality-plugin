@@ -1005,7 +1005,6 @@ async def get_aqi():
     return jsonify(aqi_data)
 
 
-@app.before_serving
 async def startup():
     global TRMNL_IPS, last_ip_refresh
 
@@ -1021,6 +1020,9 @@ async def startup():
         TRMNL_IPS = await fetch_trmnl_ips()
         last_ip_refresh = datetime.now()
         start_ip_refresh_scheduler()
+
+
+asyncio.run(startup())
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8080)
