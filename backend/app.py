@@ -827,7 +827,11 @@ async def fetch_aqi_data(lat, lon, zoom=9, locale='en'):
                 return None
 
             aqi_info = data['data']
-            aqi = aqi_info.get('aqi', 0)
+            try:
+                aqi = int(aqi_info.get('aqi', 0))
+            except (ValueError, TypeError):
+                logger.info(f"Invalid AQI value from API: {aqi_info.get('aqi')!r}")
+                return None
 
             # Parse city name (often includes country)
             city_raw = aqi_info.get('city', {}).get('name', 'Unknown')
@@ -1001,36 +1005,22 @@ async def get_aqi():
     return jsonify(aqi_data)
 
 
-def create_app():
-    """Application factory"""
-    return app
-
-
-# Initialize on module load (runs once per worker)
+@app.before_serving
 async def startup():
-    """Initialize on startup"""
-    global TRMNL_IPS
+    global TRMNL_IPS, last_ip_refresh
 
     logger.info("Starting TRMNL AQI Plugin...")
     logger.info(f"AQICN API Key: {'*' * 10}{AQICN_API_KEY[-4:] if AQICN_API_KEY else 'NOT SET'}")
     logger.info(f"Cache duration: {CACHE_MINUTES} minutes")
     logger.info(f"IP Whitelist enabled: {ENABLE_IP_WHITELIST}")
 
-    # Initialize database
     await init_db()
     logger.info("Database initialized")
 
-    # Fetch TRMNL IPs if whitelist is enabled
     if ENABLE_IP_WHITELIST:
         TRMNL_IPS = await fetch_trmnl_ips()
-        global last_ip_refresh
         last_ip_refresh = datetime.now()
-        # Start scheduler for periodic refresh
         start_ip_refresh_scheduler()
-
-
-# Run startup in event loop
-asyncio.run(startup())
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8080)

@@ -20,4 +20,4 @@ COPY translations.json .
 EXPOSE 8080
 
 # Run with gunicorn for production
-CMD ["gunicorn", "--bind", "0.0.0.0:8080", "--workers", "1", "--timeout", "120", "app:app"]
+CMD ["hypercorn", "--bind", "0.0.0.0:8080", "--workers", "2", "--keep-alive", "30", "app:app"]
