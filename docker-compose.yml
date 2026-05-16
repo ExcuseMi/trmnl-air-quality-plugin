@@ -1,6 +1,21 @@
 version: '3.8'
 
 services:
+  postgres:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: aqi_cache
+      POSTGRES_USER: aqi
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U aqi -d aqi_cache"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   aqi-api:
     build: ./backend
     container_name: trmnl-aqi-api
@@ -9,8 +24,11 @@ services:
       - "8080:8080"
     env_file:
       - .env
-    volumes:
-      - aqi-data:/data
+    environment:
+      DATABASE_URL: postgresql://aqi:${POSTGRES_PASSWORD}@postgres:5432/aqi_cache
+    depends_on:
+      postgres:
+        condition: service_healthy
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
       interval: 30s
@@ -18,4 +36,4 @@ services:
       retries: 3
 
 volumes:
-  aqi-data:
+  postgres-data:

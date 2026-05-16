@@ -1,6 +1,6 @@
 import os
 import asyncio
-import aiosqlite
+import asyncpg
 import httpx
 import time
 import json
@@ -52,17 +52,30 @@ def get_minimal_translations(locale):
 AQICN_API_KEY = os.getenv('AQICN_API_KEY')
 OPENWEATHER_API_KEY = os.getenv('OPENWEATHER_API_KEY')
 CACHE_MINUTES = 15
-DB_PATH = '/data/aqi_cache.db'
+DATABASE_URL = os.getenv('DATABASE_URL')
 ENABLE_IP_WHITELIST = os.getenv('ENABLE_IP_WHITELIST', 'false').lower() == 'true'
-IP_REFRESH_HOURS = 24  # Refresh TRMNL IPs every 24 hours
+IP_REFRESH_HOURS = 24
 
 # TRMNL server IPs (fetched from https://usetrmnl.com/api/ips on startup)
 TRMNL_IPS = set()
 last_ip_refresh = None
 scheduler = None
 
-# Ensure directories exist
-os.makedirs(os.path.dirname(DB_PATH), exist_ok=True)
+# DB pool — lazily initialized inside Hypercorn's event loop
+_pool = None
+_pool_lock = asyncio.Lock()
+
+
+async def get_pool():
+    global _pool
+    if _pool is not None:
+        return _pool
+    async with _pool_lock:
+        if _pool is None:
+            _pool = await asyncpg.create_pool(DATABASE_URL, min_size=2, max_size=10)
+            async with _pool.acquire() as conn:
+                await init_db_schema(conn)
+    return _pool
 
 
 async def fetch_trmnl_ips():
@@ -250,72 +263,53 @@ def kmh_to_beaufort(kmh):
         return 12
 
 
-async def init_db():
-    """Initialize SQLite database"""
-    async with aiosqlite.connect(DB_PATH) as db:
-        await db.execute('''
-            CREATE TABLE IF NOT EXISTS aqi_cache (
-                lat REAL,
-                lon REAL,
-                aqi INTEGER,
-                dominentpol TEXT,
-                city_name TEXT,
-                status TEXT,
-                pm25 REAL,
-                pm10 REAL,
-                data_json TEXT,
-                fetched_at TIMESTAMP,
-                PRIMARY KEY (lat, lon)
-            )
-        ''')
-
-        # Add temperature and wind_speed columns if they don't exist (migration)
-        try:
-            await db.execute('ALTER TABLE aqi_cache ADD COLUMN temperature REAL')
-            logger.info("Added temperature column to aqi_cache")
-        except Exception:
-            pass  # Column already exists
-
-        try:
-            await db.execute('ALTER TABLE aqi_cache ADD COLUMN wind_speed REAL')
-            logger.info("Added wind_speed column to aqi_cache")
-        except Exception:
-            pass  # Column already exists
-
-        # Geocoding cache table
-        await db.execute('''
-            CREATE TABLE IF NOT EXISTS geocoding_cache (
-                address TEXT PRIMARY KEY,
-                lat REAL,
-                lon REAL,
-                display_name TEXT,
-                cached_at TIMESTAMP
-            )
-        ''')
-
-        # Forecast cache table (24 hour TTL)
-        await db.execute('''
-            CREATE TABLE IF NOT EXISTS forecast_cache (
-                lat REAL,
-                lon REAL,
-                forecast_json TEXT,
-                cached_at TIMESTAMP,
-                PRIMARY KEY (lat, lon)
-            )
-        ''')
-
-        # Stations cache table (1 hour TTL)
-        await db.execute('''
-            CREATE TABLE IF NOT EXISTS stations_cache (
-                lat REAL,
-                lon REAL,
-                zoom INTEGER,
-                stations_json TEXT,
-                cached_at TIMESTAMP,
-                PRIMARY KEY (lat, lon, zoom)
-            )
-        ''')
-        await db.commit()
+async def init_db_schema(conn):
+    await conn.execute('''
+        CREATE TABLE IF NOT EXISTS aqi_cache (
+            lat REAL,
+            lon REAL,
+            aqi INTEGER,
+            dominentpol TEXT,
+            city_name TEXT,
+            status TEXT,
+            pm25 REAL,
+            pm10 REAL,
+            data_json TEXT,
+            fetched_at TIMESTAMP,
+            temperature REAL,
+            wind_speed REAL,
+            PRIMARY KEY (lat, lon)
+        )
+    ''')
+    await conn.execute('''
+        CREATE TABLE IF NOT EXISTS geocoding_cache (
+            address TEXT PRIMARY KEY,
+            lat REAL,
+            lon REAL,
+            display_name TEXT,
+            cached_at TIMESTAMP
+        )
+    ''')
+    await conn.execute('''
+        CREATE TABLE IF NOT EXISTS forecast_cache (
+            lat REAL,
+            lon REAL,
+            forecast_json TEXT,
+            cached_at TIMESTAMP,
+            PRIMARY KEY (lat, lon)
+        )
+    ''')
+    await conn.execute('''
+        CREATE TABLE IF NOT EXISTS stations_cache (
+            lat REAL,
+            lon REAL,
+            zoom INTEGER,
+            stations_json TEXT,
+            cached_at TIMESTAMP,
+            PRIMARY KEY (lat, lon, zoom)
+        )
+    ''')
+    logger.info("Database schema ready")
 
 
 async def fetch_openweather_forecast(lat, lon):
@@ -333,21 +327,17 @@ async def fetch_openweather_forecast(lat, lon):
     lon_rounded = round(lon, 2)
 
     # Check cache first (24 hour TTL)
-    async with aiosqlite.connect(DB_PATH) as db:
-        cursor = await db.execute(
-            'SELECT forecast_json, cached_at FROM forecast_cache WHERE lat = ? AND lon = ?',
-            (lat_rounded, lon_rounded)
+    pool = await get_pool()
+    async with pool.acquire() as conn:
+        row = await conn.fetchrow(
+            'SELECT forecast_json, cached_at FROM forecast_cache WHERE lat = $1 AND lon = $2',
+            lat_rounded, lon_rounded
         )
-        row = await cursor.fetchone()
-
         if row:
-            forecast_json, cached_at = row
-            cached_time = datetime.fromisoformat(cached_at)
-            age = (datetime.now() - cached_time).total_seconds() / 60  # age in minutes
-
-            if age < 1440:  # 24 hour cache (1440 minutes)
+            age = (datetime.now() - row['cached_at']).total_seconds() / 60
+            if age < 1440:
                 logger.info(f"Forecast cache hit for ({lat_rounded}, {lon_rounded}), age: {age:.1f}m")
-                return json.loads(forecast_json)
+                return json.loads(row['forecast_json'])
             else:
                 logger.info(f"Forecast cache expired for ({lat_rounded}, {lon_rounded}), age: {age:.1f}m")
 
@@ -412,14 +402,15 @@ async def fetch_openweather_forecast(lat, lon):
                     }
 
                     # Cache the result
-                    async with aiosqlite.connect(DB_PATH) as db:
-                        await db.execute(
-                            '''INSERT OR REPLACE INTO forecast_cache 
-                               (lat, lon, forecast_json, cached_at)
-                               VALUES (?, ?, ?, ?)''',
-                            (lat_rounded, lon_rounded, json.dumps(forecast_data), datetime.now().isoformat())
+                    async with pool.acquire() as conn:
+                        await conn.execute(
+                            '''INSERT INTO forecast_cache (lat, lon, forecast_json, cached_at)
+                               VALUES ($1, $2, $3, $4)
+                               ON CONFLICT (lat, lon) DO UPDATE SET
+                                   forecast_json = EXCLUDED.forecast_json,
+                                   cached_at = EXCLUDED.cached_at''',
+                            lat_rounded, lon_rounded, json.dumps(forecast_data), datetime.now()
                         )
-                        await db.commit()
 
                     logger.info(f"Fetched and cached forecast for ({lat_rounded}, {lon_rounded})")
                     return forecast_data
@@ -438,19 +429,15 @@ async def geocode_address(address):
     Caches results to avoid repeated API calls.
     """
     # Check cache first
-    async with aiosqlite.connect(DB_PATH) as db:
-        cursor = await db.execute(
-            'SELECT lat, lon, display_name FROM geocoding_cache WHERE address = ?',
-            (address,)
+    pool = await get_pool()
+    async with pool.acquire() as conn:
+        row = await conn.fetchrow(
+            'SELECT lat, lon, display_name FROM geocoding_cache WHERE address = $1',
+            address
         )
-        row = await cursor.fetchone()
         if row:
             logger.info(f"Geocoding cache hit for: {address}")
-            return {
-                'lat': row[0],
-                'lon': row[1],
-                'display_name': row[2]
-            }
+            return {'lat': row['lat'], 'lon': row['lon'], 'display_name': row['display_name']}
 
     # Call Nominatim API
     url = "https://nominatim.openstreetmap.org/search"
@@ -477,14 +464,17 @@ async def geocode_address(address):
                     display_name = result['display_name']
 
                     # Cache the result
-                    async with aiosqlite.connect(DB_PATH) as db:
-                        await db.execute(
-                            '''INSERT OR REPLACE INTO geocoding_cache 
-                               (address, lat, lon, display_name, cached_at)
-                               VALUES (?, ?, ?, ?, ?)''',
-                            (address, lat, lon, display_name, datetime.now())
+                    async with pool.acquire() as conn:
+                        await conn.execute(
+                            '''INSERT INTO geocoding_cache (address, lat, lon, display_name, cached_at)
+                               VALUES ($1, $2, $3, $4, $5)
+                               ON CONFLICT (address) DO UPDATE SET
+                                   lat = EXCLUDED.lat,
+                                   lon = EXCLUDED.lon,
+                                   display_name = EXCLUDED.display_name,
+                                   cached_at = EXCLUDED.cached_at''',
+                            address, lat, lon, display_name, datetime.now()
                         )
-                        await db.commit()
 
                     logger.info(f"Geocoded '{address}' to ({lat}, {lon})")
                     return {
@@ -606,21 +596,17 @@ async def fetch_nearby_stations(lat, lon, zoom=9):
     lon_rounded = round(lon, 2)
 
     # Check cache first (15 minute TTL for fresh data)
-    async with aiosqlite.connect(DB_PATH) as db:
-        cursor = await db.execute(
-            'SELECT stations_json, cached_at FROM stations_cache WHERE lat = ? AND lon = ? AND zoom = ?',
-            (lat_rounded, lon_rounded, zoom)
+    pool = await get_pool()
+    async with pool.acquire() as conn:
+        row = await conn.fetchrow(
+            'SELECT stations_json, cached_at FROM stations_cache WHERE lat = $1 AND lon = $2 AND zoom = $3',
+            lat_rounded, lon_rounded, zoom
         )
-        row = await cursor.fetchone()
-
         if row:
-            stations_json, cached_at = row
-            cached_time = datetime.fromisoformat(cached_at)
-            age = (datetime.now() - cached_time).total_seconds() / 60  # age in minutes
-
-            if age < 15:  # 15 minute cache
+            age = (datetime.now() - row['cached_at']).total_seconds() / 60
+            if age < 15:
                 logger.info(f"Stations cache hit for ({lat_rounded}, {lon_rounded}, zoom {zoom}), age: {age:.1f}m")
-                return json.loads(stations_json)
+                return json.loads(row['stations_json'])
             else:
                 logger.info(f"Stations cache expired for ({lat_rounded}, {lon_rounded}, zoom {zoom}), age: {age:.1f}m")
 
@@ -692,14 +678,15 @@ async def fetch_nearby_stations(lat, lon, zoom=9):
                         logger.info(f"Kept all {len(filtered_stations)} stations (good distribution)")
 
                     # Cache the result
-                    async with aiosqlite.connect(DB_PATH) as db:
-                        await db.execute(
-                            '''INSERT OR REPLACE INTO stations_cache 
-                               (lat, lon, zoom, stations_json, cached_at)
-                               VALUES (?, ?, ?, ?, ?)''',
-                            (lat_rounded, lon_rounded, zoom, json.dumps(clustered_stations), datetime.now().isoformat())
+                    async with pool.acquire() as conn:
+                        await conn.execute(
+                            '''INSERT INTO stations_cache (lat, lon, zoom, stations_json, cached_at)
+                               VALUES ($1, $2, $3, $4, $5)
+                               ON CONFLICT (lat, lon, zoom) DO UPDATE SET
+                                   stations_json = EXCLUDED.stations_json,
+                                   cached_at = EXCLUDED.cached_at''',
+                            lat_rounded, lon_rounded, zoom, json.dumps(clustered_stations), datetime.now()
                         )
-                        await db.commit()
 
                     logger.info(f"Cached stations for ({lat_rounded}, {lon_rounded}, zoom {zoom})")
                     return clustered_stations
@@ -715,80 +702,63 @@ async def fetch_nearby_stations(lat, lon, zoom=9):
 
 
 async def get_cached_aqi(lat, lon):
-    """Get cached AQI data if available and fresh"""
-    async with aiosqlite.connect(DB_PATH) as db:
-        cursor = await db.execute(
-            'SELECT * FROM aqi_cache WHERE lat = ? AND lon = ? AND fetched_at > ?',
-            (lat, lon, datetime.now() - timedelta(minutes=CACHE_MINUTES))
+    pool = await get_pool()
+    async with pool.acquire() as conn:
+        row = await conn.fetchrow(
+            'SELECT * FROM aqi_cache WHERE lat = $1 AND lon = $2 AND fetched_at > $3',
+            lat, lon, datetime.now() - timedelta(minutes=CACHE_MINUTES)
         )
-        row = await cursor.fetchone()
         if row:
             logger.info(f"Cache hit for {lat},{lon}")
-            city = row[4]
+            city = row['city_name'] or ''
             country = None
             if ', ' in city:
                 parts = city.split(', ')
                 city = parts[0]
-                country = parts[-1] if len(parts) > 1 else None
-
-            dominentpol = row[3]
-            aqi = row[2]
-
-            # IMPORTANT: SQLite ALTER TABLE adds columns at the END
-            # Original columns: 0-9 (lat, lon, aqi, dominentpol, city_name, status, pm25, pm10, data_json, fetched_at)
-            # Added columns: 10 (temperature), 11 (wind_speed)
-
+                country = parts[-1]
+            aqi = row['aqi']
+            dominentpol = row['dominentpol']
             return {
-                'lat': row[0],
-                'lon': row[1],
+                'lat': row['lat'],
+                'lon': row['lon'],
                 'aqi': aqi,
                 'dominentpol': dominentpol,
                 'pollutant_name': get_pollutant_name(dominentpol),
                 'city': city,
                 'country': country,
-                'status': row[5],
+                'status': row['status'],
                 'health_advice': get_health_advice(aqi),
-                'pm25': row[6],
-                'pm10': row[7],
-                'temperature': row[10] if len(row) > 10 else None,  # Safe access
-                'wind_speed': row[11] if len(row) > 11 else None,  # Safe access
-                'fetched_at': row[9]
+                'pm25': row['pm25'],
+                'pm10': row['pm10'],
+                'temperature': row['temperature'],
+                'wind_speed': row['wind_speed'],
+                'fetched_at': row['fetched_at']
             }
         logger.info(f"Cache miss for {lat},{lon}")
         return None
 
 
 async def cache_aqi(lat, lon, aqi_data):
-    """Cache AQI data - stores temperature in Celsius and wind in km/h"""
-    async with aiosqlite.connect(DB_PATH) as db:
-        # Reconstruct full city name for storage
-        city_full = aqi_data.get('city')
-        if aqi_data.get('country'):
-            city_full = f"{aqi_data.get('city')}, {aqi_data.get('country')}"
-
-        # Column order matters when using ALTER TABLE to add columns
-        # New columns go at the end: ..., data_json, fetched_at, temperature, wind_speed
-        await db.execute(
-            '''INSERT OR REPLACE INTO aqi_cache 
+    city_full = aqi_data.get('city')
+    if aqi_data.get('country'):
+        city_full = f"{aqi_data.get('city')}, {aqi_data.get('country')}"
+    pool = await get_pool()
+    async with pool.acquire() as conn:
+        await conn.execute(
+            '''INSERT INTO aqi_cache
                (lat, lon, aqi, dominentpol, city_name, status, pm25, pm10, data_json, fetched_at, temperature, wind_speed)
-               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''',
-            (
-                lat, lon,
-                aqi_data.get('aqi'),
-                aqi_data.get('dominentpol'),
-                city_full,
-                aqi_data.get('status'),
-                aqi_data.get('pm25'),
-                aqi_data.get('pm10'),
-                str(aqi_data),
-                datetime.now(),
-                aqi_data.get('temperature'),  # Stored in Celsius
-                aqi_data.get('wind_speed')  # Stored in km/h
-            )
+               VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+               ON CONFLICT (lat, lon) DO UPDATE SET
+                   aqi = EXCLUDED.aqi, dominentpol = EXCLUDED.dominentpol,
+                   city_name = EXCLUDED.city_name, status = EXCLUDED.status,
+                   pm25 = EXCLUDED.pm25, pm10 = EXCLUDED.pm10,
+                   data_json = EXCLUDED.data_json, fetched_at = EXCLUDED.fetched_at,
+                   temperature = EXCLUDED.temperature, wind_speed = EXCLUDED.wind_speed''',
+            lat, lon, aqi_data.get('aqi'), aqi_data.get('dominentpol'),
+            city_full, aqi_data.get('status'), aqi_data.get('pm25'), aqi_data.get('pm10'),
+            str(aqi_data), datetime.now(), aqi_data.get('temperature'), aqi_data.get('wind_speed')
         )
-        await db.commit()
-        logger.info(
-            f"Cached AQI data for {lat},{lon} (temp: {aqi_data.get('temperature')}°C, wind: {aqi_data.get('wind_speed')} km/h)")
+    logger.info(f"Cached AQI data for {lat},{lon} (temp: {aqi_data.get('temperature')}°C, wind: {aqi_data.get('wind_speed')} km/h)")
 
 
 async def fetch_aqi_data(lat, lon, zoom=9, locale='en'):
@@ -1012,9 +982,6 @@ async def startup():
     logger.info(f"AQICN API Key: {'*' * 10}{AQICN_API_KEY[-4:] if AQICN_API_KEY else 'NOT SET'}")
     logger.info(f"Cache duration: {CACHE_MINUTES} minutes")
     logger.info(f"IP Whitelist enabled: {ENABLE_IP_WHITELIST}")
-
-    await init_db()
-    logger.info("Database initialized")
 
     if ENABLE_IP_WHITELIST:
         TRMNL_IPS = await fetch_trmnl_ips()
