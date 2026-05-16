@@ -6,7 +6,7 @@ import time
 import json
 import logging
 from datetime import datetime, timedelta
-from flask import Flask, request, jsonify, send_file
+from quart import Quart, request, jsonify
 from apscheduler.schedulers.background import BackgroundScheduler
 import math
 
@@ -17,7 +17,7 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-app = Flask(__name__)
+app = Quart(__name__)
 
 # Load translations from JSON file
 TRANSLATIONS_FILE = os.path.join(os.path.dirname(__file__), 'translations.json')
@@ -61,20 +61,11 @@ TRMNL_IPS = set()
 last_ip_refresh = None
 scheduler = None
 
-# DB pool — lazily initialized inside Hypercorn's event loop
+# DB pool — initialized in before_serving, single event loop guaranteed by Quart+Hypercorn
 _pool = None
-_pool_lock = asyncio.Lock()
 
 
-async def get_pool():
-    global _pool
-    if _pool is not None:
-        return _pool
-    async with _pool_lock:
-        if _pool is None:
-            _pool = await asyncpg.create_pool(DATABASE_URL, min_size=2, max_size=10)
-            async with _pool.acquire() as conn:
-                await init_db_schema(conn)
+def get_pool():
     return _pool
 
 
@@ -327,7 +318,7 @@ async def fetch_openweather_forecast(lat, lon):
     lon_rounded = round(lon, 2)
 
     # Check cache first (24 hour TTL)
-    pool = await get_pool()
+    pool = get_pool()
     async with pool.acquire() as conn:
         row = await conn.fetchrow(
             'SELECT forecast_json, cached_at FROM forecast_cache WHERE lat = $1 AND lon = $2',
@@ -429,7 +420,7 @@ async def geocode_address(address):
     Caches results to avoid repeated API calls.
     """
     # Check cache first
-    pool = await get_pool()
+    pool = get_pool()
     async with pool.acquire() as conn:
         row = await conn.fetchrow(
             'SELECT lat, lon, display_name FROM geocoding_cache WHERE address = $1',
@@ -596,7 +587,7 @@ async def fetch_nearby_stations(lat, lon, zoom=9):
     lon_rounded = round(lon, 2)
 
     # Check cache first (15 minute TTL for fresh data)
-    pool = await get_pool()
+    pool = get_pool()
     async with pool.acquire() as conn:
         row = await conn.fetchrow(
             'SELECT stations_json, cached_at FROM stations_cache WHERE lat = $1 AND lon = $2 AND zoom = $3',
@@ -702,7 +693,7 @@ async def fetch_nearby_stations(lat, lon, zoom=9):
 
 
 async def get_cached_aqi(lat, lon):
-    pool = await get_pool()
+    pool = get_pool()
     async with pool.acquire() as conn:
         row = await conn.fetchrow(
             'SELECT * FROM aqi_cache WHERE lat = $1 AND lon = $2 AND fetched_at > $3',
@@ -742,7 +733,7 @@ async def cache_aqi(lat, lon, aqi_data):
     city_full = aqi_data.get('city')
     if aqi_data.get('country'):
         city_full = f"{aqi_data.get('city')}, {aqi_data.get('country')}"
-    pool = await get_pool()
+    pool = get_pool()
     async with pool.acquire() as conn:
         await conn.execute(
             '''INSERT INTO aqi_cache
@@ -975,21 +966,20 @@ async def get_aqi():
     return jsonify(aqi_data)
 
 
+@app.before_serving
 async def startup():
-    global TRMNL_IPS, last_ip_refresh
+    global _pool, TRMNL_IPS, last_ip_refresh
 
     logger.info("Starting TRMNL AQI Plugin...")
     logger.info(f"AQICN API Key: {'*' * 10}{AQICN_API_KEY[-4:] if AQICN_API_KEY else 'NOT SET'}")
     logger.info(f"Cache duration: {CACHE_MINUTES} minutes")
     logger.info(f"IP Whitelist enabled: {ENABLE_IP_WHITELIST}")
 
+    _pool = await asyncpg.create_pool(DATABASE_URL, min_size=2, max_size=10)
+    async with _pool.acquire() as conn:
+        await init_db_schema(conn)
+
     if ENABLE_IP_WHITELIST:
         TRMNL_IPS = await fetch_trmnl_ips()
         last_ip_refresh = datetime.now()
         start_ip_refresh_scheduler()
-
-
-asyncio.run(startup())
-
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=8080)
