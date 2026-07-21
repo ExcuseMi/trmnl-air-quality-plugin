@@ -88,8 +88,8 @@ async def fetch_trmnl_ips():
             return ips
     except Exception as e:
         logger.error(f"Warning: Failed to fetch TRMNL IPs: {e}")
-        logger.info("IP whitelist will not work until IPs are loaded")
-        return set()
+        logger.info("Keeping previous IP whitelist until next refresh")
+        return None
 
 
 def update_trmnl_ips_sync():
@@ -103,7 +103,8 @@ def update_trmnl_ips_sync():
         asyncio.set_event_loop(loop)
         try:
             ips = loop.run_until_complete(fetch_trmnl_ips())
-            TRMNL_IPS = ips
+            if ips is not None:
+                TRMNL_IPS = ips
             last_ip_refresh = datetime.now()
             logger.info(f"TRMNL IPs updated successfully at {last_ip_refresh.isoformat()}")
         finally:
@@ -980,6 +981,6 @@ async def startup():
         await init_db_schema(conn)
 
     if ENABLE_IP_WHITELIST:
-        TRMNL_IPS = await fetch_trmnl_ips()
+        TRMNL_IPS = await fetch_trmnl_ips() or set()
         last_ip_refresh = datetime.now()
         start_ip_refresh_scheduler()

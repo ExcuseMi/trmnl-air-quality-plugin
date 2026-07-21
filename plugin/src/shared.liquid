@@ -50,9 +50,9 @@
     <div class="flex flex--row gap--xsmall">
       <span class="material-symbols-outlined" id="pollutant-icon"></span>
       {% if aqi_response.pm25 %}
-      <div class="description lg:description--large">{{ aqi_response.pollutant_name }} ({{ aqi_response.pm25 }} µg/m³)</div>
+      <div class="description--large lg:description--xlarge">{{ aqi_response.pollutant_name }} ({{ aqi_response.pm25 }} µg/m³)</div>
       {% else %}
-      <div class="description lg:description--large">{{ aqi_response.pollutant_name }}</div>
+      <div class="description--large lg:description--xlarge">{{ aqi_response.pollutant_name }}</div>
       {% endif %}
     </div>
     {% if aqi_response.temperature or aqi_response.wind_speed %}
@@ -60,13 +60,13 @@
       {% if aqi_response.temperature %}
       <div class="flex flex--row gap--xsmall">
         <span class="material-symbols-outlined">thermostat</span>
-        <div class="description lg:description--large">{{ aqi_response.temperature | round }}°{% if aqi_response.temp_unit == "fahrenheit" %}F{% else %}C{% endif %}</div>
+        <div class="description--large lg:description--xlarge">{{ aqi_response.temperature | round }}°{% if aqi_response.temp_unit == "fahrenheit" %}F{% else %}C{% endif %}</div>
       </div>
       {% endif %}
       {% if aqi_response.wind_speed %}
       <div class="flex flex--row gap--xsmall">
         <span class="material-symbols-outlined">air</span>
-        <div class="description lg:description--large">
+        <div class="description--large lg:description--xlarge">
           {{ aqi_response.wind_speed | round }}
           {% if aqi_response.wind_unit == "mph" %}mph
           {% elsif aqi_response.wind_unit == "ms" %}m/s
@@ -80,7 +80,7 @@
     {% endif %}
     {% if aqi_response.forecast %}
     <div class="divider"></div>
-    <div class="description lg:description--large mt--1">
+    <div class="description--large lg:description--xlarge mt--1">
       <strong>{% if t %}{{ t.tomorrow }}{% else %}Tomorrow{% endif %}:</strong> {{ aqi_response.forecast.aqi }} {% if t %}{{ t.aqi_label }}{% else %}AQI{% endif %}
     </div>
     {% endif %}
@@ -278,8 +278,10 @@
       };
     });
   const gaugeId = document.querySelector('[id^="aqi-gauge-"]').id;
+  const gaugeWidth = document.getElementById(gaugeId).offsetWidth;
+  const showLabels = !isCompact || gaugeWidth >= 100;
 
-  Highcharts.chart(gaugeId, {
+  const chart = Highcharts.chart(gaugeId, {
     chart: {
       type: "gauge",
       height: "100%",
@@ -287,6 +289,9 @@
       backgroundColor: 'transparent',
       margin: [marginTop, 0, marginBottom, 0],
       spacing: [0, 0, 0, 0]
+    },
+    accessibility: {
+      enabled: false
     },
     title: {
       text: null
@@ -332,10 +337,10 @@
       tickWidth: isCompact ? 0 : 1,
       lineWidth: 0,
       labels: {
-        enabled: !isCompact,
-        distance: 10,
+        enabled: showLabels,
+        distance: isCompact ? 12 : 10,
         style: {
-          fontSize: '11px',
+          fontSize: isCompact ? '10px' : '15px',
           fontWeight: 'bold',
           color: '#000000'
         },
@@ -371,6 +376,20 @@
     },
     credits: {
       enabled: false
+    }
+  });
+  chart.renderer.box.style.overflow = 'visible';
+  chart.container.style.overflow = 'visible';
+  chart.container.parentElement.style.overflow = 'visible';
+
+  // Highcharts truncates labels that don't fit the SVG bounds (e.g. "100" → "1…").
+  // It stores the full text in a <title> child — restore from there.
+  chart.yAxis[0].labelGroup.element.querySelectorAll('text').forEach(function(textEl) {
+    const title = textEl.querySelector('title');
+    if (title) {
+      const tspan = textEl.querySelector('tspan');
+      if (tspan) tspan.textContent = title.textContent;
+      title.remove();
     }
   });
   }
@@ -472,7 +491,7 @@
         text.setAttribute('x', pos.x);
         text.setAttribute('y', pos.y + 4);
         text.setAttribute('text-anchor', 'middle');
-        text.setAttribute('font-size', 11);
+        text.setAttribute('font-size', 13);
         text.setAttribute('font-weight', 'bold');
         text.setAttribute('fill', textColor);
         text.textContent = station.aqi;
