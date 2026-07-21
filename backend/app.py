@@ -5,6 +5,7 @@ import httpx
 import time
 import json
 import logging
+import re
 from datetime import datetime, timedelta
 from quart import Quart, request, jsonify
 from apscheduler.schedulers.background import BackgroundScheduler
@@ -55,6 +56,10 @@ CACHE_MINUTES = 15
 DATABASE_URL = os.getenv('DATABASE_URL')
 ENABLE_IP_WHITELIST = os.getenv('ENABLE_IP_WHITELIST', 'false').lower() == 'true'
 IP_REFRESH_HOURS = 24
+
+# Matches a bare "lat,lon" address (e.g. from a location picker) so we can validate
+# the range directly instead of sending it to Nominatim and getting a generic miss.
+COORD_ADDRESS_RE = re.compile(r'^\s*(-?\d+(?:\.\d+)?)\s*,\s*(-?\d+(?:\.\d+)?)\s*$')
 
 # TRMNL server IPs (fetched from https://trmnl.com/api/ips on startup)
 TRMNL_IPS = set()
@@ -897,18 +902,30 @@ async def get_aqi():
     temp_unit = request.args.get('temp_unit', default='celsius', type=str)
     wind_unit = request.args.get('wind_unit', default='kmh', type=str)
 
-    # If address provided, geocode it
+    # If address provided, geocode it (unless it's already a bare "lat,lon" pair)
     if address:
-        geocode_result = await geocode_address(address)
-        if not geocode_result:
-            return jsonify({'error': f'Could not find location for address: {address}'}), 400
-        lat = geocode_result['lat']
-        lon = geocode_result['lon']
-        logger.info(f"Using geocoded coordinates: {lat}, {lon}")
+        coord_match = COORD_ADDRESS_RE.match(address)
+        if coord_match:
+            addr_lat, addr_lon = float(coord_match.group(1)), float(coord_match.group(2))
+            if not (-90 <= addr_lat <= 90) or not (-180 <= addr_lon <= 180):
+                return jsonify({
+                    'error': f'Invalid coordinates in address "{address}": latitude must be between '
+                             f'-90 and 90, longitude between -180 and 180'
+                })
+            lat, lon = addr_lat, addr_lon
+        else:
+            geocode_result = await geocode_address(address)
+            if not geocode_result:
+                return jsonify({
+                    'error': f'Could not find location for "{address}" — check the spelling or try a nearby city name'
+                })
+            lat = geocode_result['lat']
+            lon = geocode_result['lon']
+            logger.info(f"Using geocoded coordinates: {lat}, {lon}")
 
     # Check we have coordinates
     if lat is None or lon is None:
-        return jsonify({'error': 'Missing required parameters: (lat, lon) or address'}), 400
+        return jsonify({'error': 'Missing required parameters: (lat, lon) or address'})
 
     # Fetch AQI data, forecast, and stations in parallel
     aqi_data, forecast, stations = await asyncio.gather(
@@ -930,7 +947,7 @@ async def get_aqi():
         stations = []
 
     if not aqi_data:
-        return jsonify({'error': 'Failed to fetch AQI data'}), 500
+        return jsonify({'error': 'Failed to fetch AQI data'})
 
     # Add stations to AQI data
     if stations and not isinstance(stations, Exception):
