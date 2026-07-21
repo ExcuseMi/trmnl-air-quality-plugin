@@ -56,7 +56,7 @@ DATABASE_URL = os.getenv('DATABASE_URL')
 ENABLE_IP_WHITELIST = os.getenv('ENABLE_IP_WHITELIST', 'false').lower() == 'true'
 IP_REFRESH_HOURS = 24
 
-# TRMNL server IPs (fetched from https://usetrmnl.com/api/ips on startup)
+# TRMNL server IPs (fetched from https://trmnl.com/api/ips on startup)
 TRMNL_IPS = set()
 last_ip_refresh = None
 scheduler = None
@@ -73,7 +73,7 @@ async def fetch_trmnl_ips():
     """Fetch TRMNL server IPs from their API"""
     try:
         async with httpx.AsyncClient(timeout=10.0) as client:
-            response = await client.get('https://usetrmnl.com/api/ips')
+            response = await client.get('https://trmnl.com/api/ips')
             response.raise_for_status()
             data = response.json()
 
