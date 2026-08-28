@@ -447,7 +447,7 @@
         var tileStyle = '{{ trmnl.plugin_settings.custom_fields_values.tile_style | default: "cartodb_light" }}';
         var stadiaKey = '{{ trmnl.plugin_settings.custom_fields_values.stadia_api_key }}';
         const tileUrl = tileStyle === 'cartodb_dark' || tileStyle === 'cartodb_light'
-          ? ('https://a.basemaps.cartocdn.com/' + (tileStyle === 'cartodb_dark' ? 'dark_all' : 'light_all') + '/' + config.zoom + '/' + tx + '/' + ty + '.png')
+          ? ('https://trmnl.bettens.dev/carto/tile/' + (tileStyle === 'cartodb_dark' ? 'dark_all' : 'light_all') + '/' + config.zoom + '/' + tx + '/' + ty + '.png')
           : ('https://tiles.stadiamaps.com/tiles/' + tileStyle + '/' + config.zoom + '/' + tx + '/' + ty + '.png'
               + (stadiaKey ? '?api_key=' + stadiaKey : ''));
         

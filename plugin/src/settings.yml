@@ -117,4 +117,5 @@ custom_fields:
   - Beaufort scale (Bft): beaufort
   default: kmh
 name: Air Quality
+description:
 refresh_interval: 1440
