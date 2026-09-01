@@ -10,5 +10,39 @@ watch:
 custom_fields: {}
 
 # override variables
+# NOTE: transform.js does `return { data: input }`, and trmnlp's local mock
+# harness passes this entire `variables:` block as `input` — so fields must
+# sit directly here (matching the real flat API response shape), not nested
+# under a `data:` key, or aqi_response ends up double-wrapped.
 variables:
   trmnl: {}
+  aqi: 18
+  city: "Zwevegem, Belgium"
+  dominentpol: pm25
+  pm10: 6.0
+  pm25: 13.0
+  status: Good
+  lat: 50.854019
+  lon: 3.35523
+  zoom: 9
+  stations:
+    - aqi: '18'
+      lat: 50.814873872134
+      lon: 3.32249431936621
+      station: { name: "Zwevegem, Belgium" }
+      uid: 6979
+    - aqi: '13'
+      lat: 51.1501360922306
+      lon: 3.80873543079248
+      station: { name: "Sint-kruiswinkel, Belgium" }
+      uid: 6983
+    - aqi: '33'
+      lat: 50.9172284432463
+      lon: 3.30738579966392
+      station: { name: "Oostrozebeke, Belgium" }
+      uid: 6974
+    - aqi: '16'
+      lat: 50.4651921586212
+      lon: 3.93971432591091
+      station: { name: "Mons, Belgium" }
+      uid: 2994

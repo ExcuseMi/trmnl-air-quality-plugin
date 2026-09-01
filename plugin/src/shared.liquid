@@ -29,9 +29,11 @@
   <span class="title">{% if t %}{{ t.air_quality | default: "Air Quality" }}{% else %}Air Quality{% endif %}</span>
 </div>
 {% else %}
-<div class="layout layout--stretch">
-  <svg class="image image-dither image--fill w--full h--full rounded" viewBox="0 0 768 768" preserveAspectRatio="xMidYMid slice">
-    <g id="map-layers"></g>
+<div class="layout layout--stretch" style="position:relative;">
+  <script src="https://trmnl.com/js/maplibre-gl/5.24.0/maplibre-gl.js"></script>
+  <link href="https://trmnl.com/js/maplibre-gl/5.24.0/maplibre-gl.css" rel="stylesheet">
+  <div id="pollution-map" class="map" style="position:absolute;top:0;left:0;width:100%;height:100%;z-index:1;"></div>
+  <svg id="pollution-overlay" class="w--full h--full rounded" style="position:absolute;top:0;left:0;z-index:5;" preserveAspectRatio="none">
     <g id="stations"></g>
     <g id="location-marker"></g>
   </svg>
@@ -98,14 +100,28 @@
   const data = {{ aqi_response | json }};
 
   const config = {
-    viewWidth: 768,
-    viewHeight: 768,
-    tileSize: 256,
     zoom: data.zoom,
-    centerTile: { x: data.tile_x, y: data.tile_y },
     centerLat: data.lat,
     centerLon: data.lon
   };
+
+  let map = null;
+  let viewWidth = 768;
+  let viewHeight = 768;
+
+  function whenMapsReady(cb) {
+    let tries = 0;
+    (function attempt() {
+      if (window.TRMNLMaps && window.maplibregl) return cb();
+      if (++tries > 200) return;
+      setTimeout(attempt, 50);
+    })();
+  }
+
+  function latLonToPixels(lat, lon) {
+    const p = map.project([lon, lat]);
+    return { x: p.x, y: p.y };
+  }
 
   // AQI level definitions
   const AQI_LEVELS = [
@@ -116,28 +132,6 @@
     { min: 201, max: 300, name: 'Very Unhealthy' },
     { min: 301, max: 500, name: 'Hazardous' }
   ];
-
-  // Mercator projection
-  function latLonToTile(lat, lon, zoom) {
-    const n = Math.pow(2, zoom);
-    const latRad = lat * Math.PI / 180;
-    const x = (lon + 180) / 360 * n;
-    const y = (1 - Math.asinh(Math.tan(latRad)) / Math.PI) / 2 * n;
-    return { x, y };
-  }
-
-  function latLonToPixels(lat, lon) {
-    const tile = latLonToTile(lat, lon, config.zoom);
-    const leftTile = config.centerTile.x - 1;
-    const topTile = config.centerTile.y - 1;
-    const tileOffsetX = tile.x - leftTile;
-    const tileOffsetY = tile.y - topTile;
-
-    const px = tileOffsetX * config.tileSize;
-    const py = tileOffsetY * config.tileSize;
-
-    return { x: px, y: py };
-  }
 
   // Display mode: 'bw' for 1-bit black & white, 'gray-4' for 2-bit (4 grays)
   const DISPLAY_MODE = 'gray-4'; // Change to 'bw' for black & white
@@ -412,56 +406,6 @@
     }
   }
 
-  function renderMapTiles() {
-    const mapLayers = document.getElementById('map-layers');
-    const centerX = config.centerTile.x;
-    const centerY = config.centerTile.y;
-
-    for (let dy = -1; dy <= 1; dy++) {
-      for (let dx = -1; dx <= 1; dx++) {
-        const tx = centerX + dx;
-        const ty = centerY + dy;
-
-        const x = Math.round((dx + 1) * config.tileSize);
-        const y = Math.round((dy + 1) * config.tileSize);
-
-        const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-        rect.setAttribute('x', x);
-        rect.setAttribute('y', y);
-        rect.setAttribute('width', config.tileSize);
-        rect.setAttribute('height', config.tileSize);
-        rect.setAttribute('fill', 'url(#tile_' + tx + '_' + ty + ')');
-        rect.setAttribute('shape-rendering', 'crispEdges');
-        mapLayers.appendChild(rect);
-
-        const pattern = document.createElementNS('http://www.w3.org/2000/svg', 'pattern');
-        pattern.setAttribute('id', 'tile_' + tx + '_' + ty);
-        pattern.setAttribute('patternUnits', 'userSpaceOnUse');
-        pattern.setAttribute('x', x);
-        pattern.setAttribute('y', y);
-        pattern.setAttribute('width', config.tileSize);
-        pattern.setAttribute('height', config.tileSize);
-
-        const image = document.createElementNS('http://www.w3.org/2000/svg', 'image');
-        
-        var tileStyle = '{{ trmnl.plugin_settings.custom_fields_values.tile_style | default: "cartodb_light" }}';
-        var stadiaKey = '{{ trmnl.plugin_settings.custom_fields_values.stadia_api_key }}';
-        const tileUrl = tileStyle === 'cartodb_dark' || tileStyle === 'cartodb_light'
-          ? ('https://trmnl.bettens.dev/carto/tile/' + (tileStyle === 'cartodb_dark' ? 'dark_all' : 'light_all') + '/' + config.zoom + '/' + tx + '/' + ty + '.png')
-          : ('https://tiles.stadiamaps.com/tiles/' + tileStyle + '/' + config.zoom + '/' + tx + '/' + ty + '.png'
-              + (stadiaKey ? '?api_key=' + stadiaKey : ''));
-        
-        image.setAttributeNS('http://www.w3.org/1999/xlink', 'href', tileUrl);
-        image.setAttribute('width', config.tileSize);
-        image.setAttribute('height', config.tileSize);
-        image.setAttribute('preserveAspectRatio', 'none');
-
-        pattern.appendChild(image);
-        mapLayers.appendChild(pattern);
-      }
-    }
-  }
-
   function renderStations() {
     const stationsGroup = document.getElementById('stations');
     const stations = data.stations || [];
@@ -469,8 +413,8 @@
     stations.forEach(station => {
       const pos = latLonToPixels(station.lat, station.lon);
 
-      if (pos.x >= -20 && pos.x <= config.viewWidth + 20 && 
-          pos.y >= -20 && pos.y <= config.viewHeight + 20) {
+      if (pos.x >= -20 && pos.x <= viewWidth + 20 &&
+          pos.y >= -20 && pos.y <= viewHeight + 20) {
 
         const fillColor = getAQIColor(station.aqi);
         const strokeColor = "#555555"
@@ -506,29 +450,50 @@
     const markerGroup = document.getElementById('location-marker');
     const pos = latLonToPixels(config.centerLat, config.centerLon);
 
-    const outerCircle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-    outerCircle.setAttribute('cx', pos.x);
-    outerCircle.setAttribute('cy', pos.y);
-    outerCircle.setAttribute('r', 15);
-    outerCircle.setAttribute('fill', 'white');
-    outerCircle.setAttribute('stroke', 'black');
-    outerCircle.setAttribute('stroke-width', 3);
-    markerGroup.appendChild(outerCircle);
-
-    const innerCircle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-    innerCircle.setAttribute('cx', pos.x);
-    innerCircle.setAttribute('cy', pos.y);
-    innerCircle.setAttribute('r', 6);
-    innerCircle.setAttribute('fill', 'black');
-    markerGroup.appendChild(innerCircle);
+    // House pictogram, same as the SkyWatch plugin's home marker — a
+    // black outline keeps it legible over any of the AQI grayscale dots.
+    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    path.setAttribute('d', 'M8 0L0 6V8H1V15H4V10H7V15H15V8H16V6L14 4.5V1H11V2.25L8 0ZM9 10H12V13H9V10Z');
+    path.setAttribute('transform', 'translate(' + pos.x.toFixed(0) + ',' + pos.y.toFixed(0) + ') scale(1.6) translate(-8,-8)');
+    path.setAttribute('fill', '#ffffff');
+    path.setAttribute('stroke', '#000000');
+    path.setAttribute('stroke-width', 1);
+    markerGroup.appendChild(path);
   }
 
-  function init() { 
-    renderMapTiles();
-    renderLocationMarker();
-    renderStations();
+  function init() {
     setIcons();
     createAQIGauge(data.aqi);
+
+    const mapEl = document.getElementById('pollution-map');
+    const overlay = document.getElementById('pollution-overlay');
+    if (!mapEl || !overlay) return;
+
+    viewWidth = mapEl.clientWidth || viewWidth;
+    viewHeight = mapEl.clientHeight || viewHeight;
+    overlay.setAttribute('viewBox', '0 0 ' + viewWidth + ' ' + viewHeight);
+
+    whenMapsReady(function () {
+      TRMNLMaps.watch('pollution-map', function () {
+        map = new maplibregl.Map(TRMNLMaps.options({
+          el: 'pollution-map',
+          preset: 'minimal',
+          center: [config.centerLon, config.centerLat],
+          zoom: config.zoom
+        }));
+        map.on('load', function () {
+          map.resize();
+          viewWidth = mapEl.clientWidth || viewWidth;
+          viewHeight = mapEl.clientHeight || viewHeight;
+          overlay.setAttribute('viewBox', '0 0 ' + viewWidth + ' ' + viewHeight);
+          document.getElementById('stations').innerHTML = '';
+          document.getElementById('location-marker').innerHTML = '';
+          renderLocationMarker();
+          renderStations();
+        });
+        return map;
+      });
+    });
   }
 
   if (document.readyState === 'loading') {
