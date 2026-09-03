@@ -1,3 +1,4 @@
 function transform(input) {
-  return { "data": input };
+  const { trmnl, ...rest } = input;
+  return { "data": rest };
 }
