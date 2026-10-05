@@ -75,7 +75,7 @@ MIT License - feel free to modify and distribute
 <!-- PLUGIN_STATS_START -->
 ## 🚀 TRMNL Plugin(s)
 
-*Last updated: 2026-10-04 11:34:46 UTC*
+*Last updated: 2026-10-05 13:09:20 UTC*
 
 
 ## <img src="assets/plugin-images/193113_icon.png" alt="Air Quality icon" width="32"/> [Air Quality](https://usetrmnl.com/recipes/193113)
@@ -89,7 +89,7 @@ Monitor air quality in real-time with detailed AQI readings from stations around
 
 | Metric | Value |
 |--------|-------|
-| Installs | 210 |
+| Installs | 212 |
 | Forks | 7 |
 
 ---
